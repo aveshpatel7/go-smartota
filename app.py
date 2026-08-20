@@ -1,95 +1,92 @@
-from flask import Flask, render_template, request, send_from_directory, session, redirect, url_for
+from flask import Flask, render_template, request, send_from_directory, Response
 import paho.mqtt.client as mqtt
 import os
 import json
+from werkzeug.utils import secure_filename
+from functools import wraps
 
 app = Flask(__name__)
-# सिक्योरिटी के लिए एक सीक्रेट चाबी (यह बहुत ज़रूरी है)
-app.secret_key = "gosmart_super_secret_key_2026" 
 
-# 🔐 यहाँ अपना एडमिन यूजरनेम और पासवर्ड सेट करें
-ADMIN_USERNAME = "admin"
-ADMIN_PASSWORD = "12345678"
-
+# --- 📁 फाइल सेव करने की सेटिंग ---
 UPLOAD_FOLDER = 'firmware'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+# यह लाइन अपने आप 'firmware' नाम का फोल्डर बना देगी (अगर नहीं होगा तो)
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-MQTT_BROKER = "i26a1c71.ala.asia-southeast1.emqxsl.com"
-MQTT_PORT = 8883
-MQTT_USER = "smartnest_client"
-MQTT_PASS = "D2m9ga8JynJDEM6"
+# --- 🔒 पासवर्ड सिक्योरिटी (Login System) ---
+def check_auth(username, password):
+    return username == 'admin' and password == '12345678'
 
-mqtt_client = mqtt.Client()
-mqtt_client.username_pw_set(MQTT_USER, MQTT_PASS)
-mqtt_client.tls_set()
+def authenticate():
+    return Response(
+        'नजदीक मत आना! यह एक सुरक्षित सर्वर है।\n', 401,
+        {'WWW-Authenticate': 'Basic realm="Login Required"'})
 
-@app.route('/', methods=['GET', 'POST'])
+def requires_auth(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        auth = request.authorization
+        if not auth or not check_auth(auth.username, auth.password):
+            return authenticate()
+        return f(*args, **kwargs)
+    return decorated
+
+# --- 📡 MQTT सेटिंग (ESP32 से बात करने के लिए) ---
+MQTT_BROKER = "broker.emqx.io"  # अगर आपका ब्रोकर अलग है, तो इसे बदल लें
+MQTT_PORT = 1883
+client = mqtt.Client()
+
+try:
+    client.connect(MQTT_BROKER, MQTT_PORT, 60)
+    client.loop_start()
+    print("✅ MQTT Broker Connected Successfully!")
+except Exception as e:
+    print(f"❌ MQTT Connection Error: {e}")
+
+# --- 🌐 वेब पेज (Dashboard) का राऊट ---
+@app.route('/')
+@requires_auth
 def index():
-    error = None
-    # अगर कोई लॉगिन करने की कोशिश कर रहा है
-    if request.method == 'POST':
-        user = request.form.get('username')
-        pw = request.form.get('password')
-        
-        if user == ADMIN_USERNAME and pw == ADMIN_PASSWORD:
-            session['logged_in'] = True  # ताला खुल गया
-            return redirect(url_for('index'))
-        else:
-            error = "❌ Wrong Username or Password!"
+    return render_template('index.html')
 
-    # अगर लॉगिन है, तो फाइलें दिखाओ
-    if session.get('logged_in'):
-        files = os.listdir(UPLOAD_FOLDER)
-        return render_template('index.html', files=files)
-    
-    # अगर लॉगिन नहीं है, तो सिर्फ लॉगिन पेज दिखाओ
-    return render_template('index.html', error=error)
-
-@app.route('/logout')
-def logout():
-    session.pop('logged_in', None) # ताला वापस लगा दिया
-    return redirect(url_for('index'))
-
-@app.route('/upload', methods=['POST'])
-def upload_file():
-    if not session.get('logged_in'):
-        return "❌ Unauthorized Access!"
-        
-    if 'file' not in request.files:
-        return "No file selected!"
-    file = request.files['file']
-    if file.filename != '':
-        file.save(os.path.join(UPLOAD_FOLDER, file.filename))
-    return "✅ Firmware Uploaded Successfully! <br><br> <a href='/'>Go Back to Dashboard</a>"
-
+# --- 🚀 OTA अपडेट भेजने का राऊट ---
 @app.route('/send_ota', methods=['POST'])
+@requires_auth
 def send_ota():
-    if not session.get('logged_in'):
-        return "❌ Unauthorized Access!"
-
-    node_id = request.form.get('node_id')
-    filename = request.form.get('filename')
-    
-    host_url = request.host_url.replace("http://", "https://")
-    firmware_download_url = f"{host_url}firmware/{filename}"
-    
-    topic = f"home/device/{node_id}/control"
-    payload = {
-        "action": "OTA_UPDATE",
-        "firmware_url": firmware_download_url
-    }
-    
     try:
-        mqtt_client.connect(MQTT_BROKER, MQTT_PORT, 60)
-        mqtt_client.publish(topic, json.dumps(payload))
-        mqtt_client.disconnect()
-        return f"🚀 OTA Update Command Sent to {node_id}! ESP32 will now download: {filename} <br><br> <a href='/'>Go Back to Dashboard</a>"
-    except Exception as e:
-        return f"❌ Error connecting to MQTT: {e}"
+        node_id = request.form.get('node_id')
+        
+        # HTML से फाइल का नाम चाहे 'file' हो या 'firmware', यह दोनों को पकड़ लेगा
+        file = request.files.get('file') or request.files.get('firmware')
 
+        if not file or file.filename == '':
+            return "❌ Error: कोई फाइल नहीं मिली! कृपया सही .bin फाइल चुनें।", 400
+
+        # फाइल का नाम सुरक्षित करना और उसे सेव करना
+        filename = secure_filename(file.filename)
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(filepath)
+
+        # 🔗 ESP32 के लिए डाउनलोड URL बनाना (Render वाला लिंक)
+        download_url = f"https://go-smartota.onrender.com/firmware/{filename}"
+
+        # 📨 MQTT मैसेज तैयार करना और भेजना
+        payload = json.dumps({"url": download_url})
+        topic = f"{node_id}/ota"  # अपना टॉपिक चेक कर लें, यह डिफ़ॉल्ट है
+        client.publish(topic, payload)
+
+        print(f"[OTA] Update sent to {node_id}. URL: {download_url}")
+        return f"✅ अपडेट सफलतापूर्वक {node_id} को भेज दिया गया! URL: {download_url}"
+
+    except Exception as e:
+        return f"❌ Error: {str(e)}"
+
+# --- 📥 ESP32 को फाइल देने (Download) का राऊट ---
 @app.route('/firmware/<filename>')
 def serve_firmware(filename):
-    return send_from_directory(UPLOAD_FOLDER, filename)
+    # यह राऊट ESP32 को .bin फाइल डाउनलोड करवाएगा
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
+# --- ⚙️ सर्वर स्टार्ट करना ---
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
