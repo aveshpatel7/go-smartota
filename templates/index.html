@@ -9,51 +9,78 @@
         button { background-color: #28a745; color: white; border: none; cursor: pointer; font-weight: bold; }
         button.update-btn { background-color: #007bff; }
         .logout-btn { background-color: #dc3545; color: white; text-decoration: none; padding: 10px 15px; border-radius: 5px; float: right; font-weight: bold;}
+        /* प्रोग्रेस बार का स्टाइल */
+        #progressContainer { width: 80%; margin: 10px auto; display: none; }
+        #progressBar { width: 0%; height: 20px; background-color: #28a745; text-align: center; color: white; border-radius: 5px; transition: width 0.3s; }
     </style>
 </head>
 <body>
     <div class="box">
         <h2>🚀 Go Smart OTA Dashboard</h2>
 
-        <!-- अगर लॉगिन नहीं है, तो सिर्फ लॉगिन फॉर्म दिखाओ -->
         {% if not session.get('logged_in') %}
             <h3>🔒 Admin Login</h3>
-            {% if error %}
-                <p style="color: red; font-weight: bold;">{{ error }}</p>
-            {% endif %}
+            {% if error %} <p style="color: red; font-weight: bold;">{{ error }}</p> {% endif %}
             <form method="POST" action="/">
                 <input type="text" name="username" placeholder="Enter Username" required><br>
                 <input type="password" name="password" placeholder="Enter Password" required><br>
                 <button type="submit">Login</button>
             </form>
-
-        <!-- अगर लॉगिन है, तो असली डैशबोर्ड दिखाओ -->
         {% else %}
             <a href="/logout" class="logout-btn">Logout</a>
             <div style="clear: both;"></div>
 
             <h3>1. Upload Firmware (.bin)</h3>
-            <form action="/upload" method="POST" enctype="multipart/form-data">
-                <input type="file" name="file" accept=".bin" required>
-                <button type="submit">Upload Firmware</button>
+            <form id="uploadForm" action="/upload" method="POST" enctype="multipart/form-data">
+                <input type="file" name="file" id="fileInput" accept=".bin" required>
+                <button type="submit" id="uploadBtn">Upload Firmware</button>
             </form>
+            
+            <!-- प्रोग्रेस बार यहाँ दिखेगा -->
+            <div id="progressContainer"><div id="progressBar">0%</div></div>
+            <h4 id="statusText"></h4>
 
             <hr>
 
             <h3>2. Send OTA Update</h3>
             <form action="/send_ota" method="POST">
                 <input type="text" name="node_id" placeholder="Enter NODE_ID (e.g. 4L-NODE-2FD6E4)" required>
-                
                 <select name="filename" required>
                     <option value="">Select Firmware to Send...</option>
-                    {% for file in files %}
-                        <option value="{{ file }}">{{ file }}</option>
-                    {% endfor %}
+                    {% for file in files %} <option value="{{ file }}">{{ file }}</option> {% endfor %}
                 </select>
-                
                 <button type="submit" class="update-btn">Send OTA Command</button>
             </form>
         {% endif %}
     </div>
+
+    <script>
+        // प्रोग्रेस बार का जादू
+        document.getElementById('uploadForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            var formData = new FormData(this);
+            var xhr = new XMLHttpRequest();
+            var progressBar = document.getElementById('progressBar');
+            var progressContainer = document.getElementById('progressContainer');
+            var statusText = document.getElementById('statusText');
+
+            progressContainer.style.display = 'block';
+            xhr.upload.addEventListener("progress", function(e) {
+                if (e.lengthComputable) {
+                    var percent = Math.round((e.loaded / e.total) * 100);
+                    progressBar.style.width = percent + "%";
+                    progressBar.innerText = percent + "%";
+                    statusText.innerText = "हवा आ रही है... " + percent + "%";
+                }
+            });
+
+            xhr.onload = function() {
+                statusText.innerText = "✅ अपलोड सफल!";
+                setTimeout(function(){ location.reload(); }, 1000);
+            };
+            xhr.open("POST", "/upload", true);
+            xhr.send(formData);
+        });
+    </script>
 </body>
 </html>
