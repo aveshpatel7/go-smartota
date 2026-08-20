@@ -3,157 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Go Smart - Advanced OTA</title>
-    <!-- Tailwind CSS for high-tech styling -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts for Sci-Fi look -->
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- FontAwesome for cool icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+    <title>Go Smart - OTA Update</title>
     <style>
-        body {
-            background-color: #050b14;
-            background-image: 
-                radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), 
-                radial-gradient(at 50% 0%, hsla(225,39%,30%,0.2) 0, transparent 50%), 
-                radial-gradient(at 100% 0%, hsla(339,49%,30%,0.2) 0, transparent 50%);
-            font-family: 'Rajdhani', sans-serif;
-            color: #e2e8f0;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-        /* Glass Effect */
-        .glass-panel {
-            background: rgba(13, 25, 48, 0.6);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(0, 255, 255, 0.15);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(0, 255, 255, 0.05);
-        }
-        .tech-font { font-family: 'Orbitron', sans-serif; }
-        .glow-text { text-shadow: 0 0 10px rgba(0, 255, 255, 0.5), 0 0 20px rgba(0, 255, 255, 0.3); }
-        
-        /* Input Fields */
-        .input-field {
-            background: rgba(0, 10, 20, 0.5);
-            border: 1px solid rgba(0, 255, 255, 0.2);
-            transition: all 0.3s ease;
-        }
-        .input-field:focus {
-            border-color: rgba(0, 255, 255, 0.8);
-            box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
-            outline: none;
-        }
-        
-        /* Button Glow */
-        .btn-glow {
-            background: linear-gradient(90deg, #00d2ff 0%, #3a7bd5 100%);
-            box-shadow: 0 0 15px rgba(0, 210, 255, 0.4);
-            transition: all 0.3s ease;
-        }
-        .btn-glow:hover {
-            box-shadow: 0 0 25px rgba(0, 210, 255, 0.7);
-            transform: translateY(-2px);
-        }
-        
-        /* File Input Styling */
-        input[type="file"]::file-selector-button {
-            background: rgba(0, 255, 255, 0.1);
-            border: 1px solid rgba(0, 255, 255, 0.3);
-            color: #00ffff;
-            padding: 8px 16px;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-family: 'Orbitron', sans-serif;
-            margin-right: 15px;
-        }
-        input[type="file"]::file-selector-button:hover { background: rgba(0, 255, 255, 0.2); }
-        
-        /* Moving Grid Background */
-        .grid-bg {
-            position: fixed;
-            top: 0; left: 0; width: 100vw; height: 100vh;
-            background-image: 
-                linear-gradient(rgba(0, 255, 255, 0.04) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 255, 255, 0.04) 1px, transparent 1px);
-            background-size: 40px 40px;
-            z-index: -1;
-            animation: gridMove 20s linear infinite;
-        }
-        @keyframes gridMove {
-            0% { transform: translateY(0); }
-            100% { transform: translateY(40px); }
-        }
+        body { font-family: Arial, sans-serif; background-color: #f4f4f9; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .container { background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); width: 400px; text-align: center; }
+        h1 { color: #333; margin-bottom: 20px; }
+        .form-group { margin-bottom: 15px; text-align: left; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
+        input[type="text"], input[type="file"] { padding: 10px; width: 100%; box-sizing: border-box; border: 1px solid #ccc; border-radius: 5px; }
+        button { background-color: #007bff; color: white; border: none; padding: 12px 20px; width: 100%; border-radius: 5px; cursor: pointer; font-size: 16px; margin-top: 10px; }
+        button:hover { background-color: #0056b3; }
     </style>
 </head>
-<body class="antialiased flex items-center justify-center p-4">
-    <div class="grid-bg"></div>
-    
-    <div class="w-full max-w-2xl glass-panel rounded-2xl p-8 sm:p-10 relative overflow-hidden">
-        <!-- Sci-Fi Corner Accents -->
-        <div class="absolute top-0 left-0 w-16 h-16 border-t-2 border-l-2 border-cyan-400 opacity-60 rounded-tl-2xl"></div>
-        <div class="absolute bottom-0 right-0 w-16 h-16 border-b-2 border-r-2 border-cyan-400 opacity-60 rounded-br-2xl"></div>
-
-        <div class="text-center mb-10">
-            <div class="inline-block p-4 rounded-full bg-cyan-900 bg-opacity-30 border border-cyan-500 mb-4 shadow-[0_0_15px_rgba(0,255,255,0.2)]">
-                <i class="fa-solid fa-microchip text-4xl text-cyan-400"></i>
+<body>
+    <div class="container">
+        <h1>Go Smart OTA Update</h1>
+        <form action="/send_ota" method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="node_id">Target Node ID:</label>
+                <input type="text" name="node_id" id="node_id" placeholder="Enter Node ID (e.g. Node_123)" required>
             </div>
-            <h1 class="text-4xl sm:text-5xl font-bold tech-font text-white tracking-widest glow-text uppercase">Go Smart</h1>
-            <p class="text-cyan-400 font-semibold tracking-[0.2em] mt-3 text-sm uppercase">IoT Firmware Control Center</p>
-        </div>
-
-        <form id="otaForm" action="/send_ota" method="POST" enctype="multipart/form-data" class="space-y-8">
-            
-            <div class="space-y-2">
-                <label class="block text-cyan-300 tech-font text-sm tracking-widest uppercase">
-                    <i class="fa-solid fa-satellite-dish mr-2"></i>Target Node ID
-                </label>
-                <div class="relative">
-                    <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
-                        <i class="fa-solid fa-crosshairs text-cyan-500"></i>
-                    </div>
-                    <input type="text" name="node_id" required placeholder="Enter Node ID (e.g. Node_123)" 
-                        class="w-full pl-12 pr-4 py-4 rounded-xl input-field text-white placeholder-gray-600 tech-font text-lg focus:outline-none">
-                </div>
+            <div class="form-group">
+                <label for="file">Firmware File (.bin):</label>
+                <input type="file" name="file" id="file" accept=".bin" required>
             </div>
-
-            <div class="space-y-2">
-                <label class="block text-cyan-300 tech-font text-sm tracking-widest uppercase">
-                    <i class="fa-solid fa-file-code mr-2"></i>Firmware Bin File
-                </label>
-                <div class="relative">
-                    <!-- FIXED: name changed from "firmware" to "file" -->
-                    <input type="file" name="file" accept=".bin" required 
-                        class="w-full p-3 rounded-xl input-field text-cyan-100 tech-font cursor-pointer focus:outline-none">
-                </div>
-            </div>
-
-            <div class="pt-4">
-                <button type="submit" class="w-full btn-glow text-white tech-font font-bold text-xl py-4 rounded-xl flex justify-center items-center gap-3 uppercase tracking-widest relative overflow-hidden group">
-                    <span class="absolute inset-0 w-full h-full bg-white/20 group-hover:scale-x-100 origin-left scale-x-0 transition-transform duration-500 ease-out"></span>
-                    <i class="fa-solid fa-cloud-arrow-up z-10 text-2xl"></i>
-                    <span class="z-10">Deploy Update</span>
-                </button>
-            </div>
+            <button type="submit">Upload & Send Update</button>
         </form>
-
-        <div class="mt-10 flex justify-between items-center text-xs text-cyan-500/70 tech-font border-t border-cyan-900/50 pt-5">
-            <div class="flex items-center gap-2">
-                <div class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_#22c55e] animate-pulse"></div>
-                SYSTEM ONLINE
-            </div>
-            <div class="tracking-widest">VERSION 2.0 PRO</div>
-        </div>
     </div>
-    
-    <script>
-        document.getElementById('otaForm').addEventListener('submit', function() {
-            const btn = this.querySelector('button[type="submit"]');
-            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin z-10 text-2xl"></i><span class="z-10 tracking-widest">TRANSMITTING...</span>';
-            btn.classList.add('opacity-75', 'cursor-not-allowed');
-        });
-    </script>
 </body>
 </html>
