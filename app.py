@@ -11,7 +11,7 @@ app.secret_key = "gosmart_super_secret_key_2026"
 ADMIN_USERNAME = "admin"
 ADMIN_PASSWORD = "12345678"
 
-UPLOAD_FOLDER = 'firmware'
+UPLOAD_FOLDER = 'firmwarev2'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 MQTT_BROKER = "i26a1c71.ala.asia-southeast1.emqxsl.com"
