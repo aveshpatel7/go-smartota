@@ -89,7 +89,6 @@
     </style>
 </head>
 <body class="antialiased flex items-center justify-center p-4">
-    <!-- Animated Grid -->
     <div class="grid-bg"></div>
     
     <div class="w-full max-w-2xl glass-panel rounded-2xl p-8 sm:p-10 relative overflow-hidden">
@@ -97,7 +96,6 @@
         <div class="absolute top-0 left-0 w-16 h-16 border-t-2 border-l-2 border-cyan-400 opacity-60 rounded-tl-2xl"></div>
         <div class="absolute bottom-0 right-0 w-16 h-16 border-b-2 border-r-2 border-cyan-400 opacity-60 rounded-br-2xl"></div>
 
-        <!-- Header -->
         <div class="text-center mb-10">
             <div class="inline-block p-4 rounded-full bg-cyan-900 bg-opacity-30 border border-cyan-500 mb-4 shadow-[0_0_15px_rgba(0,255,255,0.2)]">
                 <i class="fa-solid fa-microchip text-4xl text-cyan-400"></i>
@@ -106,10 +104,8 @@
             <p class="text-cyan-400 font-semibold tracking-[0.2em] mt-3 text-sm uppercase">IoT Firmware Control Center</p>
         </div>
 
-        <!-- Form -->
         <form id="otaForm" action="/send_ota" method="POST" enctype="multipart/form-data" class="space-y-8">
             
-            <!-- Node ID Field -->
             <div class="space-y-2">
                 <label class="block text-cyan-300 tech-font text-sm tracking-widest uppercase">
                     <i class="fa-solid fa-satellite-dish mr-2"></i>Target Node ID
@@ -123,21 +119,19 @@
                 </div>
             </div>
 
-            <!-- Firmware File Field -->
             <div class="space-y-2">
                 <label class="block text-cyan-300 tech-font text-sm tracking-widest uppercase">
                     <i class="fa-solid fa-file-code mr-2"></i>Firmware Bin File
                 </label>
                 <div class="relative">
-                    <input type="file" name="firmware" accept=".bin" required 
+                    <!-- FIXED: name changed from "firmware" to "file" -->
+                    <input type="file" name="file" accept=".bin" required 
                         class="w-full p-3 rounded-xl input-field text-cyan-100 tech-font cursor-pointer focus:outline-none">
                 </div>
             </div>
 
-            <!-- Upload Button -->
             <div class="pt-4">
                 <button type="submit" class="w-full btn-glow text-white tech-font font-bold text-xl py-4 rounded-xl flex justify-center items-center gap-3 uppercase tracking-widest relative overflow-hidden group">
-                    <!-- Hover Effect Background -->
                     <span class="absolute inset-0 w-full h-full bg-white/20 group-hover:scale-x-100 origin-left scale-x-0 transition-transform duration-500 ease-out"></span>
                     <i class="fa-solid fa-cloud-arrow-up z-10 text-2xl"></i>
                     <span class="z-10">Deploy Update</span>
@@ -145,7 +139,6 @@
             </div>
         </form>
 
-        <!-- Footer / Server Status -->
         <div class="mt-10 flex justify-between items-center text-xs text-cyan-500/70 tech-font border-t border-cyan-900/50 pt-5">
             <div class="flex items-center gap-2">
                 <div class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_#22c55e] animate-pulse"></div>
@@ -155,7 +148,6 @@
         </div>
     </div>
     
-    <!-- Script for Loading Animation -->
     <script>
         document.getElementById('otaForm').addEventListener('submit', function() {
             const btn = this.querySelector('button[type="submit"]');
