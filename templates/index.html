@@ -38,13 +38,11 @@
             <div style="clear: both;"></div>
 
             <h3>1. Upload Firmware (.bin)</h3>
-            <!-- 🚀 यहाँ id="uploadForm" जोड़ा है -->
             <form id="uploadForm" action="/upload" method="POST" enctype="multipart/form-data">
                 <input type="file" name="file" accept=".bin" required>
                 <button type="submit" id="uploadBtn">Upload Firmware</button>
             </form>
             
-            <!-- 🚀 यह आपका हवा आने वाला प्रोग्रेस बार है -->
             <div id="progressContainer"><div id="progressBar">0%</div></div>
             <p id="statusText"></p>
 
@@ -53,7 +51,6 @@
             <h3>2. Send OTA Update</h3>
             <form action="/send_ota" method="POST">
                 
-                <!-- 🚀 असली डायनामिक ड्रॉपडाउन (यहाँ सिर्फ ऑनलाइन डिवाइस दिखेंगे) -->
                 <select name="node_id" required>
                     <option value="">Select Online Node ID...</option>
                     {% for node in online_nodes %}
@@ -124,9 +121,14 @@
             fetch('/get_nodes')
             .then(response => response.json())
             .then(nodes => {
-                var currentValue = nodeSelect.value; // जो आपने सेलेक्ट किया है उसे याद रखेगा
+                var currentValue = nodeSelect.value;
                 
-                // ड्रॉपडाउन को खाली करके नई लिस्ट डालेगा
+                // ⚠️ सबसे ज़रूरी बदलाव: अगर आपने ड्रॉपडाउन से नाम चुन लिया है, तो रिफ्रेश मत करो!
+                // यही आपके OTA बटन को रोक रहा था।
+                if (currentValue !== "") {
+                    return; 
+                }
+                
                 nodeSelect.innerHTML = '<option value="">Select Online Node ID...</option>';
                 nodes.forEach(node => {
                     var option = document.createElement('option');
@@ -134,16 +136,10 @@
                     option.innerText = node;
                     nodeSelect.appendChild(option);
                 });
-                
-                // अगर आपका सेलेक्ट किया हुआ डिवाइस अभी भी ऑनलाइन है, तो उसे सेलेक्टेड ही रखेगा
-                if (nodes.includes(currentValue)) {
-                    nodeSelect.value = currentValue;
-                }
             })
             .catch(error => console.error('Error fetching nodes:', error));
         }
 
-        // यह लाइन जासूस को हर 5 सेकंड (5000 ms) में काम पर लगाएगी
         setInterval(updateDropdown, 5000);
     </script>
 </body>
