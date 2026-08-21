@@ -4,10 +4,10 @@ import os
 import json
 
 app = Flask(__name__)
-# सिक्योरिटी के लिए एक सीक्रेट चाबी (यह बहुत ज़रूरी है)
+# सिक्योरिटी के लिए सीक्रेट चाबी
 app.secret_key = "gosmart_super_secret_key_2026" 
 
-# 🔐 यहाँ अपना एडमिन यूजरनेम और पासवर्ड सेट करें
+# 🔐 एडमिन यूजरनेम और पासवर्ड
 ADMIN_USERNAME = "admin"
 ADMIN_PASSWORD = "12345678"
 
@@ -19,25 +19,39 @@ MQTT_PORT = 8883
 MQTT_USER = "smartnest_client"
 MQTT_PASS = "D2m9ga8JynJDEM6"
 
-# 🚀 ऑनलाइन नोड्स को याद रखने के लिए लिस्ट
+# 🚀 ऑनलाइन नोड्स को याद रखने के लिए (यह लिस्ट अपने आप अपडेट होगी)
 active_nodes = set()
 
 def on_connect(client, userdata, flags, rc):
     if rc == 0:
-        # जैसे ही सर्वर चालू होगा, वह सब नोड्स का स्टेटस सुनना शुरू कर देगा
+        # सर्वर चालू होते ही सभी कस्टमर्स के status टॉपिक को सुनना शुरू कर देगा
         client.subscribe("home/device/+/status")
+        print("✅ MQTT Connected & Listening for Device Status...")
 
 def on_message(client, userdata, msg):
     try:
-        # अगर किसी नोड ने "online" भेजा, तो उसका नाम लिस्ट में जुड़ जाएगा
+        # टॉपिक से Node ID निकालना (जैसे: home/device/4L-NODE-2FD6E4/status)
         topic_parts = msg.topic.split('/')
         if len(topic_parts) >= 4 and topic_parts[3] == 'status':
             node_id = topic_parts[2]
-            payload = msg.payload.decode('utf-8').strip().lower()
-            if payload == "online":
+            payload_str = msg.payload.decode('utf-8')
+            
+            # ESP32 के JSON डेटा को पढ़ना
+            data = json.loads(payload_str)
+            
+            # अगर डिवाइस ऑनलाइन है, तो लिस्ट में डाल दो
+            if data.get("is_online") is True:
                 active_nodes.add(node_id)
+                print(f"🟢 Device Online: {node_id}")
+            
+            # अगर डिवाइस ऑफलाइन हो गया, तो लिस्ट से हटा दो
+            elif data.get("is_online") is False:
+                if node_id in active_nodes:
+                    active_nodes.remove(node_id)
+                print(f"🔴 Device Offline: {node_id}")
+                
     except Exception as e:
-        pass
+        pass # अगर कोई कचरा मैसेज आए तो उसे इग्नोर कर दो
 
 mqtt_client = mqtt.Client()
 mqtt_client.username_pw_set(MQTT_USER, MQTT_PASS)
@@ -45,7 +59,6 @@ mqtt_client.tls_set()
 mqtt_client.on_connect = on_connect
 mqtt_client.on_message = on_message
 
-# 🚀 MQTT को बैकग्राउंड में हमेशा चालू रखने के लिए (ताकि ऑनलाइन नोड्स ट्रैक हो सकें)
 try:
     mqtt_client.connect(MQTT_BROKER, MQTT_PORT, 60)
     mqtt_client.loop_start() 
@@ -55,29 +68,26 @@ except Exception as e:
 @app.route('/', methods=['GET', 'POST'])
 def index():
     error = None
-    # अगर कोई लॉगिन करने की कोशिश कर रहा है
     if request.method == 'POST':
         user = request.form.get('username')
         pw = request.form.get('password')
         
         if user == ADMIN_USERNAME and pw == ADMIN_PASSWORD:
-            session['logged_in'] = True  # ताला खुल गया
+            session['logged_in'] = True 
             return redirect(url_for('index'))
         else:
             error = "❌ Wrong Username or Password!"
 
-    # अगर लॉगिन है, तो फाइलें दिखाओ
     if session.get('logged_in'):
         files = os.listdir(UPLOAD_FOLDER)
-        # 🚀 ऑनलाइन नोड्स की लिस्ट HTML को भेज रहे हैं
+        # 🚀 ऑनलाइन नोड्स की लिस्ट HTML (डैशबोर्ड) को भेज रहे हैं
         return render_template('index.html', files=files, online_nodes=active_nodes)
     
-    # अगर लॉगिन नहीं है, तो सिर्फ लॉगिन पेज दिखाओ
     return render_template('index.html', error=error)
 
 @app.route('/logout')
 def logout():
-    session.pop('logged_in', None) # ताला वापस लगा दिया
+    session.pop('logged_in', None)
     return redirect(url_for('index'))
 
 @app.route('/upload', methods=['POST'])
@@ -110,9 +120,8 @@ def send_ota():
     }
     
     try:
-        # 🚀 अब बार-बार कनेक्ट/डिस्कनेक्ट करने की ज़रूरत नहीं, बैकग्राउंड कनेक्शन यूज़ होगा
         mqtt_client.publish(topic, json.dumps(payload))
-        return f"🚀 OTA Update Command Sent to {node_id}! ESP32 will now download: {filename} <br><br> <a href='/'>Go Back to Dashboard</a>"
+        return f"🚀 OTA Update Command Sent to {node_id}! ESP32 will now download: {filename}"
     except Exception as e:
         return f"❌ Error connecting to MQTT: {e}"
 
