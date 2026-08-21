@@ -9,78 +9,114 @@
         button { background-color: #28a745; color: white; border: none; cursor: pointer; font-weight: bold; }
         button.update-btn { background-color: #007bff; }
         .logout-btn { background-color: #dc3545; color: white; text-decoration: none; padding: 10px 15px; border-radius: 5px; float: right; font-weight: bold;}
-        /* प्रोग्रेस बार का स्टाइल */
-        #progressContainer { width: 80%; margin: 10px auto; display: none; }
-        #progressBar { width: 0%; height: 20px; background-color: #28a745; text-align: center; color: white; border-radius: 5px; transition: width 0.3s; }
+        
+        /* 🚀 प्रोग्रेस बार की नई डिज़ाइन (सिर्फ इतना जोड़ा है) */
+        #progressContainer { width: 80%; margin: 10px auto; background-color: #e9ecef; border-radius: 5px; display: none; }
+        #progressBar { width: 0%; height: 20px; background-color: #28a745; text-align: center; color: white; border-radius: 5px; font-weight: bold; transition: width 0.2s; }
+        #statusText { color: #007bff; font-weight: bold; margin-top: 5px; }
     </style>
 </head>
 <body>
     <div class="box">
         <h2>🚀 Go Smart OTA Dashboard</h2>
 
+        <!-- अगर लॉगिन नहीं है, तो सिर्फ लॉगिन फॉर्म दिखाओ -->
         {% if not session.get('logged_in') %}
             <h3>🔒 Admin Login</h3>
-            {% if error %} <p style="color: red; font-weight: bold;">{{ error }}</p> {% endif %}
+            {% if error %}
+                <p style="color: red; font-weight: bold;">{{ error }}</p>
+            {% endif %}
             <form method="POST" action="/">
                 <input type="text" name="username" placeholder="Enter Username" required><br>
                 <input type="password" name="password" placeholder="Enter Password" required><br>
                 <button type="submit">Login</button>
             </form>
+
+        <!-- अगर लॉगिन है, तो असली डैशबोर्ड दिखाओ -->
         {% else %}
             <a href="/logout" class="logout-btn">Logout</a>
             <div style="clear: both;"></div>
 
             <h3>1. Upload Firmware (.bin)</h3>
+            <!-- 🚀 यहाँ फॉर्म में id="uploadForm" जोड़ा है ताकि जावास्क्रिप्ट काम कर सके -->
             <form id="uploadForm" action="/upload" method="POST" enctype="multipart/form-data">
-                <input type="file" name="file" id="fileInput" accept=".bin" required>
+                <input type="file" name="file" accept=".bin" required>
                 <button type="submit" id="uploadBtn">Upload Firmware</button>
             </form>
             
-            <!-- प्रोग्रेस बार यहाँ दिखेगा -->
+            <!-- 🚀 यह आपका नया प्रोग्रेस बार है (10%, 20% वाला) -->
             <div id="progressContainer"><div id="progressBar">0%</div></div>
-            <h4 id="statusText"></h4>
+            <p id="statusText"></p>
 
             <hr>
 
             <h3>2. Send OTA Update</h3>
             <form action="/send_ota" method="POST">
-                <input type="text" name="node_id" placeholder="Enter NODE_ID (e.g. 4L-NODE-2FD6E4)" required>
+                
+                <!-- 🚀 टाइप करने वाले बॉक्स की जगह ड्रॉपडाउन मेनू (Dropdown) -->
+                <select name="node_id" required>
+                    <option value="">Select Online Node ID...</option>
+                    <option value="4L-NODE-2FD6E4">4L-NODE-2FD6E4</option>
+                    <option value="4L-NODE-123456">4L-NODE-123456</option>
+                    <!-- आप ऐसे ही और भी Node ID यहाँ बढ़ा सकते हैं -->
+                </select>
+                
                 <select name="filename" required>
                     <option value="">Select Firmware to Send...</option>
-                    {% for file in files %} <option value="{{ file }}">{{ file }}</option> {% endfor %}
+                    {% for file in files %}
+                        <option value="{{ file }}">{{ file }}</option>
+                    {% endfor %}
                 </select>
+                
                 <button type="submit" class="update-btn">Send OTA Command</button>
             </form>
         {% endif %}
     </div>
 
+    <!-- 🚀 यह छोटी सी स्क्रिप्ट प्रोग्रेस बार को चलाएगी -->
     <script>
-        // प्रोग्रेस बार का जादू
-        document.getElementById('uploadForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            var formData = new FormData(this);
-            var xhr = new XMLHttpRequest();
-            var progressBar = document.getElementById('progressBar');
-            var progressContainer = document.getElementById('progressContainer');
-            var statusText = document.getElementById('statusText');
+        var uploadForm = document.getElementById('uploadForm');
+        if (uploadForm) {
+            uploadForm.onsubmit = function(e) {
+                e.preventDefault(); // पेज को रीफ्रेश होने से रोकना
+                
+                var formData = new FormData(this);
+                var xhr = new XMLHttpRequest();
+                var progressContainer = document.getElementById('progressContainer');
+                var progressBar = document.getElementById('progressBar');
+                var statusText = document.getElementById('statusText');
+                var uploadBtn = document.getElementById('uploadBtn');
 
-            progressContainer.style.display = 'block';
-            xhr.upload.addEventListener("progress", function(e) {
-                if (e.lengthComputable) {
-                    var percent = Math.round((e.loaded / e.total) * 100);
-                    progressBar.style.width = percent + "%";
-                    progressBar.innerText = percent + "%";
-                    statusText.innerText = "हवा आ रही है... " + percent + "%";
-                }
-            });
+                uploadBtn.disabled = true;
+                progressContainer.style.display = 'block';
+                progressBar.style.width = '0%';
+                
+                xhr.upload.onprogress = function(e) {
+                    if (e.lengthComputable) {
+                        var percent = Math.round((e.loaded / e.total) * 100);
+                        progressBar.style.width = percent + "%";
+                        progressBar.innerText = percent + "%";
+                        statusText.innerText = "हवा आ रही है (Uploading)... " + percent + "%";
+                    }
+                };
 
-            xhr.onload = function() {
-                statusText.innerText = "✅ अपलोड सफल!";
-                setTimeout(function(){ location.reload(); }, 1000);
+                xhr.onload = function() {
+                    if (xhr.status === 200) {
+                        statusText.innerText = "✅ अपलोड सफल! (Upload Successful)";
+                        statusText.style.color = "green";
+                        // 1.5 सेकंड बाद पेज खुद रिफ्रेश होगा ताकि नई फाइल लिस्ट में आ जाए
+                        setTimeout(function(){ location.reload(); }, 1500);
+                    } else {
+                        statusText.innerText = "❌ Error uploading file!";
+                        statusText.style.color = "red";
+                        uploadBtn.disabled = false;
+                    }
+                };
+
+                xhr.open("POST", "/upload", true);
+                xhr.send(formData);
             };
-            xhr.open("POST", "/upload", true);
-            xhr.send(formData);
-        });
+        }
     </script>
 </body>
 </html>
