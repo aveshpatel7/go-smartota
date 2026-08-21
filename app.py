@@ -19,39 +19,52 @@ MQTT_PORT = 8883
 MQTT_USER = "smartnest_client"
 MQTT_PASS = "D2m9ga8JynJDEM6"
 
-# 🚀 ऑनलाइन नोड्स को याद रखने के लिए (यह लिस्ट अपने आप अपडेट होगी)
-active_nodes = set()
+# 🚀 'डायरी' (File) का नाम जहाँ सारे ऑनलाइन नोड्स लिखे जाएंगे
+NODES_FILE = 'active_nodes.json'
+
+# यह फंक्शन डायरी में नोड का नाम लिखेगा या मिटाएगा
+def update_node_status(node_id, is_online):
+    nodes = []
+    if os.path.exists(NODES_FILE):
+        try:
+            with open(NODES_FILE, 'r') as f:
+                nodes = json.load(f)
+        except:
+            pass
+    
+    nodes_set = set(nodes)
+    if is_online:
+        nodes_set.add(node_id)
+    else:
+        nodes_set.discard(node_id)
+        
+    with open(NODES_FILE, 'w') as f:
+        json.dump(list(nodes_set), f)
 
 def on_connect(client, userdata, flags, rc):
     if rc == 0:
-        # सर्वर चालू होते ही सभी कस्टमर्स के status टॉपिक को सुनना शुरू कर देगा
         client.subscribe("home/device/+/status")
         print("✅ MQTT Connected & Listening for Device Status...")
 
 def on_message(client, userdata, msg):
     try:
-        # टॉपिक से Node ID निकालना (जैसे: home/device/4L-NODE-2FD6E4/status)
         topic_parts = msg.topic.split('/')
         if len(topic_parts) >= 4 and topic_parts[3] == 'status':
             node_id = topic_parts[2]
             payload_str = msg.payload.decode('utf-8')
-            
-            # ESP32 के JSON डेटा को पढ़ना
             data = json.loads(payload_str)
             
-            # अगर डिवाइस ऑनलाइन है, तो लिस्ट में डाल दो
-            if data.get("is_online") is True:
-                active_nodes.add(node_id)
+            # 🚀 रामबाण तरीका: कोई धड़कन आए या स्विच दबे, तुरंत डायरी में लिखो!
+            if data.get("is_online") is True or "channel" in data:
+                update_node_status(node_id, True)
                 print(f"🟢 Device Online: {node_id}")
             
-            # अगर डिवाइस ऑफलाइन हो गया, तो लिस्ट से हटा दो
             elif data.get("is_online") is False:
-                if node_id in active_nodes:
-                    active_nodes.remove(node_id)
+                update_node_status(node_id, False)
                 print(f"🔴 Device Offline: {node_id}")
                 
     except Exception as e:
-        pass # अगर कोई कचरा मैसेज आए तो उसे इग्नोर कर दो
+        pass
 
 mqtt_client = mqtt.Client()
 mqtt_client.username_pw_set(MQTT_USER, MQTT_PASS)
@@ -64,6 +77,16 @@ try:
     mqtt_client.loop_start() 
 except Exception as e:
     print("MQTT Connection Error:", e)
+
+# डायरी पढ़ने का फंक्शन
+def get_saved_nodes():
+    if os.path.exists(NODES_FILE):
+        try:
+            with open(NODES_FILE, 'r') as f:
+                return json.load(f)
+        except:
+            pass
+    return []
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -80,8 +103,8 @@ def index():
 
     if session.get('logged_in'):
         files = os.listdir(UPLOAD_FOLDER)
-        # 🚀 ऑनलाइन नोड्स की लिस्ट HTML (डैशबोर्ड) को भेज रहे हैं
-        return render_template('index.html', files=files, online_nodes=active_nodes)
+        online_nodes = get_saved_nodes() # डायरी से नाम लेगा
+        return render_template('index.html', files=files, online_nodes=online_nodes)
     
     return render_template('index.html', error=error)
 
@@ -129,12 +152,11 @@ def send_ota():
 def serve_firmware(filename):
     return send_from_directory(UPLOAD_FOLDER, filename)
 
-# 🚀 नया फंक्शन: HTML के जासूस को ऑनलाइन नोड्स की लिस्ट देने के लिए
 @app.route('/get_nodes')
-def get_nodes():
+def get_nodes_api():
     if not session.get('logged_in'):
         return jsonify([])
-    return jsonify(list(active_nodes))
+    return jsonify(get_saved_nodes()) # जासूस को भी डायरी से नाम देगा
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
