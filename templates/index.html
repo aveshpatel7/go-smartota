@@ -38,7 +38,7 @@
             <div style="clear: both;"></div>
 
             <h3>1. Upload Firmware (.bin)</h3>
-            <!-- 🚀 यहाँ id="uploadForm" जोड़ा है -->
+            <!-- 🚀 यहाँ id="uploadForm" जोड़ा है -->
             <form id="uploadForm" action="/upload" method="POST" enctype="multipart/form-data">
                 <input type="file" name="file" accept=".bin" required>
                 <button type="submit" id="uploadBtn">Upload Firmware</button>
@@ -73,7 +73,7 @@
         {% endif %}
     </div>
 
-    <!-- 🚀 प्रोग्रेस बार चलाने वाली जावास्क्रिप्ट -->
+    <!-- 🚀 प्रोग्रेस बार और जासूस चलाने वाली जावास्क्रिप्ट -->
     <script>
         var uploadForm = document.getElementById('uploadForm');
         if (uploadForm) {
@@ -115,6 +115,36 @@
                 xhr.send(formData);
             };
         }
+
+        // 🚀 ऑटोमैटिक ड्रॉपडाउन अपडेट करने वाला जादू (हर 5 सेकंड में)
+        function updateDropdown() {
+            var nodeSelect = document.querySelector('select[name="node_id"]');
+            if (!nodeSelect) return;
+
+            fetch('/get_nodes')
+            .then(response => response.json())
+            .then(nodes => {
+                var currentValue = nodeSelect.value; // जो आपने सेलेक्ट किया है उसे याद रखेगा
+                
+                // ड्रॉपडाउन को खाली करके नई लिस्ट डालेगा
+                nodeSelect.innerHTML = '<option value="">Select Online Node ID...</option>';
+                nodes.forEach(node => {
+                    var option = document.createElement('option');
+                    option.value = node;
+                    option.innerText = node;
+                    nodeSelect.appendChild(option);
+                });
+                
+                // अगर आपका सेलेक्ट किया हुआ डिवाइस अभी भी ऑनलाइन है, तो उसे सेलेक्टेड ही रखेगा
+                if (nodes.includes(currentValue)) {
+                    nodeSelect.value = currentValue;
+                }
+            })
+            .catch(error => console.error('Error fetching nodes:', error));
+        }
+
+        // यह लाइन जासूस को हर 5 सेकंड (5000 ms) में काम पर लगाएगी
+        setInterval(updateDropdown, 5000);
     </script>
 </body>
 </html>

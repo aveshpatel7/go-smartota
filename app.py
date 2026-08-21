@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, send_from_directory, session, redirect, url_for
+from flask import Flask, render_template, request, send_from_directory, session, redirect, url_for, jsonify
 import paho.mqtt.client as mqtt
 import os
 import json
@@ -36,7 +36,7 @@ def on_message(client, userdata, msg):
             node_id = topic_parts[2]
             payload_str = msg.payload.decode('utf-8')
             
-            # ESP32 के JSON डेटा को पढ़ना
+            # ESP32 के JSON डेटा को पढ़ना
             data = json.loads(payload_str)
             
             # अगर डिवाइस ऑनलाइन है, तो लिस्ट में डाल दो
@@ -128,6 +128,13 @@ def send_ota():
 @app.route('/firmware/<filename>')
 def serve_firmware(filename):
     return send_from_directory(UPLOAD_FOLDER, filename)
+
+# 🚀 नया फंक्शन: HTML के जासूस को ऑनलाइन नोड्स की लिस्ट देने के लिए
+@app.route('/get_nodes')
+def get_nodes():
+    if not session.get('logged_in'):
+        return jsonify([])
+    return jsonify(list(active_nodes))
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
