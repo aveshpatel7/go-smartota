@@ -159,20 +159,20 @@ def upload_file():
         return jsonify({"status": "success", "message": f"{file.filename} Uploaded!"})
     return jsonify({"status": "error", "message": "Upload failed."})
 
-# 🚀 AJAX के लिए नया OTA सेंडर (गारंटीड डिलीवरी और वर्ज़न बायपास के साथ)
+# 🚀 AJAX के लिए नया OTA सेंडर (Security Bypass के साथ)
 @app.route('/send_ota', methods=['POST'])
 def send_ota():
     if not session.get('logged_in'):
         return jsonify({"status": "error", "message": "Unauthorized"}), 401
 
-    node_id = request.form.get('node_id')
+    node_id = request.form.get('node_id').strip()
     filename = request.form.get('filename')
     
     host_url = request.host_url.replace("http://", "https://")
     firmware_download_url = f"{host_url}firmware/{filename}"
     
-    # 🎯 बदलाव 1: ESP32 का असली डेडिकेटेड OTA टॉपिक
-    topic = f"smartnest/devices/{node_id}/ota"
+    # 🎯 बदलाव 1: हम वापस पुराने 'control' टॉपिक का इस्तेमाल करेंगे जिसे EMQX ब्लॉक नहीं करता!
+    topic = f"home/device/{node_id}/control"
     
     # 🎯 बदलाव 2: पेलोड में "version" डालना ज़रूरी है, वरना ESP32 इग्नोर कर देगा
     payload = {
