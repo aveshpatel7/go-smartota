@@ -159,7 +159,7 @@ def upload_file():
         return jsonify({"status": "success", "message": f"{file.filename} Uploaded!"})
     return jsonify({"status": "error", "message": "Upload failed."})
 
-# 🚀 AJAX के लिए नया OTA सेंडर (कोई पेज रिफ्रेश नहीं होगा)
+# 🚀 AJAX के लिए नया OTA सेंडर (गारंटीड डिलीवरी और वर्ज़न बायपास के साथ)
 @app.route('/send_ota', methods=['POST'])
 def send_ota():
     if not session.get('logged_in'):
@@ -171,11 +171,20 @@ def send_ota():
     host_url = request.host_url.replace("http://", "https://")
     firmware_download_url = f"{host_url}firmware/{filename}"
     
-    topic = f"home/device/{node_id}/control"
-    payload = {"action": "OTA_UPDATE", "firmware_url": firmware_download_url}
+    # 🎯 बदलाव 1: ESP32 का असली डेडिकेटेड OTA टॉपिक
+    topic = f"smartnest/devices/{node_id}/ota"
+    
+    # 🎯 बदलाव 2: पेलोड में "version" डालना ज़रूरी है, वरना ESP32 इग्नोर कर देगा
+    payload = {
+        "action": "OTA_UPDATE", 
+        "firmware_url": firmware_download_url,
+        "version": "v3.0.0" 
+    }
     
     try:
-        mqtt_client.publish(topic, json.dumps(payload))
+        # 🎯 बदलाव 3: qos=1 (गारंटीड डिलीवरी) 
+        mqtt_client.publish(topic, json.dumps(payload), qos=1)
+        
         add_log(f"🚀 Sent Firmware {filename} to {node_id}")
         return jsonify({"status": "success", "message": f"Command sent to {node_id}!"})
     except Exception as e:
