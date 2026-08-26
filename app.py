@@ -71,7 +71,7 @@ def update_telemetry(node_id, data):
     
     save_json(TELEMETRY_FILE, telemetry)
 
-# 📡 बैकग्राउंड MQTT कनेक्शन (डैशबोर्ड को ज़िंदा रखने के लिए)
+# 📡 बैकग्राउंड MQTT कनेक्शन (टेलीमेट्री और लॉग्स पकड़ने के लिए)
 def on_connect(client, userdata, flags, rc):
     if rc == 0:
         client.subscribe("home/device/+/status")
@@ -162,7 +162,7 @@ def upload_file():
     return jsonify({"status": "error", "message": "Upload failed."})
 
 
-# 🚀 आपका पुराना और 100% भरोसेमंद OTA लॉजिक (नए डैशबोर्ड के AJAX के साथ)
+# 🚀 आपका पुराना और 100% पक्का "धक्का मारने वाला" OTA लॉजिक 
 @app.route('/send_ota', methods=['POST'])
 def send_ota():
     if not session.get('logged_in'):
@@ -177,20 +177,26 @@ def send_ota():
     # 🎯 आपका पुराना वाला पक्का टॉपिक
     topic = f"home/device/{node_id}/control"
     
-    # 🎯 आपका पुराना वाला पक्का पेलोड (बिना किसी एक्स्ट्रा चीज़ के)
+    # 🎯 आपका पुराना वाला पक्का पेलोड
     payload = {
         "action": "OTA_UPDATE",
         "firmware_url": firmware_download_url
     }
     
     try:
-        # बैकग्राउंड MQTT का उपयोग करके मैसेज भेजना (ताकि डैशबोर्ड क्रैश न हो)
-        mqtt_client.publish(topic, json.dumps(payload))
+        # 🎯 यहाँ हमने वापस आपका एकदम पुराना (सक्सेसफुल) लॉजिक लगा दिया है!
+        # एक नया क्लाइंट बनाओ -> कनेक्ट करो -> मैसेज को धक्का मार कर भेजो -> डिसकनेक्ट कर दो
+        ota_client = mqtt.Client()
+        ota_client.username_pw_set(MQTT_USER, MQTT_PASS)
+        ota_client.tls_set()
+        ota_client.connect(MQTT_BROKER, MQTT_PORT, 60)
+        ota_client.publish(topic, json.dumps(payload))
+        ota_client.disconnect()
         
         # डैशबोर्ड की काली स्क्रीन पर मैसेज छापना
         add_log(f"🚀 Sent Firmware {filename} to {node_id}")
         
-        # AJAX के लिए JSON रिस्पॉन्स (ताकि पेज रिफ्रेश न हो)
+        # AJAX के लिए JSON रिस्पॉन्स
         return jsonify({"status": "success", "message": f"OTA Command Sent to {node_id}!"})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)})
