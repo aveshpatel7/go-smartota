@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Go Smart | Enterprise Console</title>
+    <title>Go Smart | Ultimate Console</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         :root { --bg-dark: #0f172a; --bg-card: #1e293b; --text-main: #f8fafc; --text-muted: #94a3b8; --accent-green: #10b981; --accent-blue: #3b82f6; --border-color: #334155; }
@@ -33,16 +33,16 @@
         .btn-primary:hover { background: #2563eb; }
         .btn-success { background: var(--accent-green); color: white; }
         .btn-dark { background: #4b5563; color: white; }
-        .btn-danger { background: #ef4444; color: white; }
         
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border-color); font-size: 14px; }
         th { color: var(--text-muted); font-size: 12px; }
 
-        .console-window { background: #000; color: #10b981; font-family: monospace; padding: 15px; border-radius: 8px; height: 220px; overflow-y: auto; font-size: 13px; line-height: 1.5; }
+        .console-window { background: #000; color: #10b981; font-family: monospace; padding: 15px; border-radius: 8px; height: 180px; overflow-y: auto; font-size: 13px; }
         
+        /* Remote Control Toggles */
         .switch-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .remote-btn { padding: 20px; background: var(--bg-dark); border: 1px solid var(--border-color); color: white; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold; transition: 0.3s;}
+        .remote-btn { padding: 15px; background: var(--bg-dark); border: 1px solid var(--border-color); color: white; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold; transition: 0.3s;}
         .remote-btn:hover { border-color: var(--accent-blue); }
         .remote-btn.on { background: rgba(16, 185, 129, 0.2); border-color: var(--accent-green); color: var(--accent-green); }
 
@@ -56,13 +56,11 @@
     <div class="login-wrapper">
         <div class="login-box">
             <div class="logo-icon" style="margin: 0 auto 20px auto;">GS</div>
-            <h2>Go Smart Portal</h2>
-            <p style="color:var(--text-muted); font-size:14px; margin-bottom:20px;">Admin & Customer Access</p>
-            {% if error %} <p style="color: #ef4444; font-size:14px;">{{ error }}</p> {% endif %}
+            <h2>Go Smart V3.0</h2>
             <form method="POST" action="/">
-                <input type="text" name="username" placeholder="Username / Customer ID" required>
+                <input type="text" name="username" placeholder="Username" required>
                 <input type="password" name="password" placeholder="Password" required>
-                <button type="submit" class="btn btn-primary">Sign In</button>
+                <button type="submit" class="btn btn-primary">Secure Login</button>
             </form>
         </div>
     </div>
@@ -72,36 +70,28 @@
     <div class="sidebar">
         <div class="logo-area">
             <div class="logo-icon"><i class="fas fa-bolt"></i></div>
-            <div class="logo-text"><h2>Go Smart</h2><p>{{ session.get('username') }}</p></div>
+            <div class="logo-text"><h2>Go Smart</h2><p>Enterprise Console</p></div>
         </div>
-
-        {% if session.get('role') == 'admin' %}
-            <a class="nav-item active" onclick="switchTab('tab-ota', this)"><i class="fas fa-cloud-upload-alt"></i> OTA & Serial Monitor</a>
-            <a class="nav-item" onclick="switchTab('tab-control', this)"><i class="fas fa-gamepad"></i> Live Remote Control</a>
-            <a class="nav-item" onclick="switchTab('tab-crm', this)"><i class="fas fa-chart-line"></i> CRM & Telemetry</a>
-            <a class="nav-item" onclick="switchTab('tab-users', this)"><i class="fas fa-users-cog"></i> Customer Accounts</a>
-        {% else %}
-            <a class="nav-item active" onclick="switchTab('tab-control', this)"><i class="fas fa-gamepad"></i> My Smart Switchboard</a>
-            <a class="nav-item" onclick="switchTab('tab-crm', this)"><i class="fas fa-chart-line"></i> My Electricity Usage</a>
-        {% endif %}
-
+        <a class="nav-item active" onclick="switchTab('tab-ota', this)"><i class="fas fa-cloud-upload-alt"></i> OTA & Flashing</a>
+        <a class="nav-item" onclick="switchTab('tab-control', this)"><i class="fas fa-gamepad"></i> Live Remote Control</a>
+        <a class="nav-item" onclick="switchTab('tab-crm', this)"><i class="fas fa-chart-line"></i> CRM & Analytics</a>
         <div style="flex-grow: 1;"></div>
         <a href="/logout" class="nav-item" style="color: #ef4444;"><i class="fas fa-sign-out-alt"></i> Logout</a>
     </div>
 
     <div class="main-content">
         <div class="topbar">
-            <h2>Welcome, {{ session.get('username') }}</h2>
-            <div style="color:var(--accent-green); font-weight:bold;"><i class="fas fa-circle" style="font-size:10px;"></i> System Online</div>
+            <h2><i class="fas fa-server"></i> System Control Center</h2>
+            <div style="color:var(--accent-green); font-weight:bold;"><i class="fas fa-wifi"></i> Broker Online</div>
         </div>
 
         <div class="container">
-            {% if session.get('role') == 'admin' %}
             <!-- ========================================== -->
-            <!-- 🚀 TAB 1: OTA & SERIAL MONITOR (ADMIN ONLY) -->
+            <!-- 🚀 TAB 1: OTA & FLASH CENTER -->
             <!-- ========================================== -->
             <div id="tab-ota" class="tab-pane active">
                 <div class="grid-2">
+                    <!-- 1. Remote MQTT OTA Updater -->
                     <div class="card">
                         <div class="card-header"><i class="fas fa-cloud-upload-alt"></i> Remote Fleet OTA</div>
                         <form id="otaForm">
@@ -119,14 +109,15 @@
                         </form>
                     </div>
 
+                    <!-- 2. USB WebSerial Flasher (आपका फेवरेट फीचर वापस आ गया!) -->
                     <div class="card">
-                        <div class="card-header"><i class="fab fa-usb"></i> WebSerial Monitor & USB Flasher</div>
-                        <p style="font-size: 13px; color: var(--text-muted); margin-top: 0;">Connect ESP32 via USB to view live serial logs & flash locally.</p>
+                        <div class="card-header"><i class="fab fa-usb"></i> WebSerial Browser USB Flasher</div>
+                        <p style="font-size: 13px; color: var(--text-muted); margin-top: 0;">Connect ESP32 via USB cable to Chrome/Edge to flash locally.</p>
                         
                         <button type="button" class="btn btn-success" id="btnConnectUsb" style="margin-bottom: 10px;">
                             <i class="fas fa-plug"></i> Connect ESP32 via USB
                         </button>
-                        <p id="usbStatusText" style="font-size: 13px; color: #ef4444; font-weight: bold; margin-bottom: 15px;">🔌 USB Cable Disconnected</p>
+                        <p id="usbStatusText" style="font-size: 13px; color: #ef4444; font-weight: bold; margin-bottom: 20px;">🔌 USB Cable Disconnected</p>
                         
                         <div style="background-color: var(--bg-dark); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color);">
                             <label>Select Firmware File (.bin)</label>
@@ -139,53 +130,42 @@
                 </div>
 
                 <div class="card" style="margin-bottom: 30px;">
-                    <div class="card-header">
-                        <span><i class="fas fa-terminal"></i> Live Serial Monitor (ESP32 Logs & Boot Info)</span>
-                        <button onclick="document.getElementById('consoleWindow').innerHTML=''" class="btn btn-dark" style="width:auto; padding:4px 10px; font-size:12px;">Clear Screen</button>
-                    </div>
-                    <div class="console-window" id="consoleWindow">
-                        <p style="color:#f59e0b;">> Click "Connect ESP32 via USB" above to view live serial logs...</p>
-                    </div>
+                    <div class="card-header"><i class="fas fa-terminal"></i> Live System Console (OTA & USB Logs)</div>
+                    <div class="console-window" id="consoleWindow"></div>
                 </div>
 
+                <!-- 3. Upload to Server -->
                 <div class="card" style="width: 50%;">
-                    <div class="card-header"><i class="fas fa-hdd"></i> Upload Firmware to Server</div>
+                    <div class="card-header"><i class="fas fa-hdd"></i> Upload Firmware to Server (For Remote OTA)</div>
                     <form id="uploadForm" enctype="multipart/form-data">
                         <input type="file" name="file" accept=".bin" required>
                         <button type="submit" class="btn btn-success" id="uploadBtn"><i class="fas fa-upload"></i> Upload File</button>
                     </form>
                 </div>
             </div>
-            {% endif %}
 
             <!-- ========================================== -->
             <!-- 🎛️ TAB 2: LIVE REMOTE CONTROL -->
             <!-- ========================================== -->
-            <div id="tab-control" class="tab-pane {% if session.get('role') != 'admin' %}active{% endif %}">
+            <div id="tab-control" class="tab-pane">
                 <div class="card" style="max-width: 600px; margin: auto;">
                     <div class="card-header"><i class="fas fa-gamepad"></i> Virtual Switchboard</div>
-                    
-                    {% if session.get('role') == 'admin' %}
                     <label>Select Device to Control</label>
                     <select id="controlNodeSelect" onchange="enableControls()">
                         <option value="">Select Online Node...</option>
                     </select>
-                    {% else %}
-                    <input type="hidden" id="controlNodeSelect" value="{{ session.get('assigned_node') }}">
-                    <p style="color:var(--accent-blue); font-weight:bold; margin-top:0;">Connected to: {{ session.get('assigned_node') }}</p>
-                    {% endif %}
                     
-                    <div class="switch-grid" id="controlPanel" style="{% if session.get('role') == 'admin' %}opacity: 0.5; pointer-events: none;{% endif %}">
+                    <div class="switch-grid" id="controlPanel" style="opacity: 0.5; pointer-events: none;">
                         <button class="remote-btn" onclick="toggleSwitch(1, this)">💡 Switch 1</button>
                         <button class="remote-btn" onclick="toggleSwitch(2, this)">💡 Switch 2</button>
                         <button class="remote-btn" onclick="toggleSwitch(3, this)">💡 Switch 3</button>
                         <button class="remote-btn" onclick="toggleSwitch(4, this)">💡 Switch 4</button>
                     </div>
                     
-                    <div style="margin-top: 25px;" id="fanPanel" style="{% if session.get('role') == 'admin' %}opacity: 0.5; pointer-events: none;{% endif %}">
-                        <label>Fan Regulator (Speed 0 to 4)</label>
+                    <div style="margin-top: 20px;" id="fanPanel" style="opacity: 0.5; pointer-events: none;">
+                        <label>Fan Speed (0 to 4)</label>
                         <input type="range" id="fanSpeed" min="0" max="4" value="0" style="width:100%;" onchange="setFan()">
-                        <p style="text-align:center; font-weight:bold; font-size:18px;">Speed: <span id="fanDisplay" style="color:var(--accent-green);">0 (OFF)</span></p>
+                        <p style="text-align:center; font-weight:bold;">Current Speed: <span id="fanDisplay">0</span></p>
                     </div>
                 </div>
             </div>
@@ -196,10 +176,8 @@
             <div id="tab-crm" class="tab-pane">
                 <div class="card">
                     <div class="card-header">
-                        <span><i class="fas fa-microchip"></i> {% if session.get('role') == 'admin' %}Global Warranty Telemetry{% else %}My Device Runtime{% endif %}</span>
-                        {% if session.get('role') == 'admin' %}
+                        <span><i class="fas fa-microchip"></i> Global Warranty & Usage Telemetry</span>
                         <a href="/export_csv" class="btn btn-success" style="width:auto; padding:8px 15px;"><i class="fas fa-file-excel"></i> Export Excel</a>
-                        {% endif %}
                     </div>
                     <div style="overflow-x: auto;">
                         <table>
@@ -212,55 +190,10 @@
                 </div>
             </div>
 
-            {% if session.get('role') == 'admin' %}
-            <!-- ========================================== -->
-            <!-- 👥 TAB 4: CUSTOMER ACCOUNTS (ADMIN ONLY) -->
-            <!-- ========================================== -->
-            <div id="tab-users" class="tab-pane">
-                <div class="grid-2">
-                    <div class="card">
-                        <div class="card-header"><i class="fas fa-user-plus"></i> Create Customer Account</div>
-                        <form id="createCustomerForm">
-                            <label>Customer Full Name</label>
-                            <input type="text" id="custName" placeholder="e.g. Ramesh Patel" required>
-                            <label>Assign Device (Node ID)</label>
-                            <input type="text" id="custNode" placeholder="e.g. 4L-NODE-2FD6E4" required>
-                            <label>Customer Login Username</label>
-                            <input type="text" id="custUser" placeholder="e.g. ramesh" required>
-                            <label>Customer Password</label>
-                            <input type="password" id="custPass" placeholder="e.g. 123456" required>
-                            <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Save Customer Account</button>
-                        </form>
-                    </div>
-
-                    <div class="card">
-                        <div class="card-header"><i class="fas fa-users"></i> Registered Customer Portals</div>
-                        <table>
-                            <thead>
-                                <tr><th>Name</th><th>Username</th><th>Node ID</th><th>Action</th></tr>
-                            </thead>
-                            <tbody>
-                                {% for u, d in customers.items() %}
-                                <tr>
-                                    <td><b>{{ d.name }}</b></td>
-                                    <td>{{ u }}</td>
-                                    <td><span style="color:var(--accent-blue);">{{ d.node_id }}</span></td>
-                                    <td><button onclick="deleteCustomer('{{ u }}')" style="background:none; border:none; color:#ef4444; cursor:pointer;"><i class="fas fa-trash"></i></button></td>
-                                </tr>
-                                {% else %}
-                                <tr><td colspan="4" style="text-align:center; color:var(--text-muted);">No customers created yet.</td></tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-            {% endif %}
-
         </div>
     </div>
 
-    <!-- 🌟 CORE SCRIPT 🌟 -->
+    <!-- 🌟 NORMAL JAVASCRIPT (For OTA and Telemetry) 🌟 -->
     <script>
         function switchTab(tabId, element) {
             document.querySelectorAll('.tab-pane').forEach(t => t.classList.remove('active'));
@@ -271,20 +204,17 @@
 
         function logToConsole(msg, color = '#10b981') {
             let cw = document.getElementById('consoleWindow');
-            if(cw) {
-                cw.innerHTML += `<p style="color: ${color}; margin: 2px 0;">> ${msg}</p>`;
-                cw.scrollTop = cw.scrollHeight;
-            }
+            cw.innerHTML += `<p style="color: ${color};">> ${msg}</p>`;
+            cw.scrollTop = cw.scrollHeight;
         }
 
-        {% if session.get('role') == 'admin' %}
         document.getElementById('otaForm').onsubmit = function(e) {
             e.preventDefault();
             let btn = document.getElementById('otaBtn');
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...'; btn.disabled = true;
             fetch('/send_ota', { method: 'POST', body: new FormData(this) })
             .then(res => res.json()).then(data => {
-                logToConsole(data.message, "#3b82f6");
+                logToConsole(data.message);
                 btn.innerHTML = '<i class="fas fa-rocket"></i> Send OTA Command'; btn.disabled = false;
             });
         };
@@ -300,32 +230,6 @@
                 if(data.status === "success") { setTimeout(() => location.reload(), 1500); }
             });
         };
-
-        document.getElementById('createCustomerForm').onsubmit = function(e) {
-            e.preventDefault();
-            fetch('/create_customer', {
-                method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    name: document.getElementById('custName').value,
-                    node_id: document.getElementById('custNode').value,
-                    username: document.getElementById('custUser').value,
-                    password: document.getElementById('custPass').value
-                })
-            }).then(res => res.json()).then(data => {
-                alert(data.message);
-                location.reload();
-            });
-        };
-
-        function deleteCustomer(user) {
-            if(confirm('Are you sure you want to delete ' + user + '?')) {
-                fetch('/delete_customer', {
-                    method: 'POST', headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ username: user })
-                }).then(() => location.reload());
-            }
-        }
-        {% endif %}
 
         function enableControls() {
             let node = document.getElementById('controlNodeSelect').value;
@@ -346,33 +250,37 @@
             let state = btn.classList.contains('on') ? "OFF" : "ON";
             if(state === "ON") btn.classList.add('on'); else btn.classList.remove('on');
             fetch('/device_control', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ node_id: node, channel: ch, state: state }) });
-            logToConsole(`Sent Command: ${node} -> Ch ${ch} ${state}`, "#3b82f6");
+            logToConsole(`Sent Remote Command: ${node} -> Ch ${ch} ${state}`);
         }
 
         function setFan() {
             let node = document.getElementById('controlNodeSelect').value;
             if(!node) return;
             let speed = document.getElementById('fanSpeed').value;
-            document.getElementById('fanDisplay').innerText = speed == 0 ? "0 (OFF)" : speed;
+            document.getElementById('fanDisplay').innerText = speed;
             let state = speed > 0 ? "ON" : "OFF";
             fetch('/device_control', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ node_id: node, channel: 5, state: state, speed: parseInt(speed) }) });
-            logToConsole(`Sent Command: ${node} -> Fan Speed ${speed}`, "#3b82f6");
+            logToConsole(`Sent Remote Command: ${node} -> Fan Speed ${speed}`);
         }
 
         function fetchLiveData() {
             fetch('/api/live_data').then(res => res.json()).then(data => {
-                let nodeSelect = document.getElementById('nodeSelect');
-                let controlSelect = document.getElementById('controlNodeSelect');
-
-                if(nodeSelect && controlSelect && controlSelect.tagName === 'SELECT') {
-                    let currentVal = nodeSelect.value;
+                let selects = [document.getElementById('nodeSelect'), document.getElementById('controlNodeSelect')];
+                selects.forEach(select => {
+                    let currentVal = select.value;
                     let isSpecial = currentVal === "ALL_ONLINE";
-                    let html = '<option value="">Select Online Node...</option><option value="ALL_ONLINE" style="background:#ef4444; color:white; font-weight:bold;">🔥 BROADCAST TO ALL</option>';
+                    let html = select.id === 'nodeSelect' ? '<option value="">Select Online Node...</option><option value="ALL_ONLINE" style="background:#ef4444; color:white; font-weight:bold;">🔥 BROADCAST TO ALL</option>' : '<option value="">Select Online Node...</option>';
                     data.nodes.forEach(n => { html += `<option value="${n}">${n}</option>`; });
-                    if(nodeSelect.innerHTML.length !== html.length) {
-                        nodeSelect.innerHTML = html;
-                        if(data.nodes.includes(currentVal) || isSpecial) nodeSelect.value = currentVal;
+                    if(select.innerHTML.length !== html.length) {
+                        select.innerHTML = html;
+                        if(data.nodes.includes(currentVal) || isSpecial) select.value = currentVal;
                     }
+                });
+
+                let cw = document.getElementById('consoleWindow');
+                if(data.logs.length > 0 && cw.innerHTML.length < 50) {
+                    data.logs.forEach(l => { cw.innerHTML += `<p>${l}</p>`; });
+                    cw.scrollTop = cw.scrollHeight;
                 }
 
                 let tBody = document.getElementById('telemetryTableBody');
@@ -383,12 +291,11 @@
                         if(tel.channels) {
                             for(const ch in tel.channels) { totalHours += parseFloat(tel.channels[ch].on_hours); totalToggles += parseInt(tel.channels[ch].toggles); }
                         }
-                        let healthTag = tel.crash_count > 0 ? `<span style="color:#ef4444; font-weight:bold;">${tel.crash_count} Crashes</span>` : `<span style="color:#10b981; font-weight:bold;">Healthy</span>`;
+                        let healthTag = tel.crash_count > 0 ? `<span class="tag-warn">${tel.crash_count} Crashes</span>` : `<span class="tag-ok">Healthy</span>`;
                         let signalTag = tel.rssi < -80 ? `<span style="color:#ef4444;">Weak (${tel.rssi}dBm)</span>` : `<span style="color:#10b981;">Good (${tel.rssi}dBm)</span>`;
-                        
                         tBody.innerHTML += `<tr>
                             <td style="font-weight:bold; color:var(--accent-blue);">${node}</td>
-                            <td><span style="border:1px solid var(--accent-green); padding:2px 6px; border-radius:10px; font-size:11px;">${tel.fw_version}</span></td>
+                            <td><span class="badge">${tel.fw_version}</span></td>
                             <td>Boot: ${tel.boot_count} | ${healthTag}</td>
                             <td>${signalTag}</td>
                             <td>${totalHours.toFixed(2)} Hrs</td>
@@ -401,131 +308,97 @@
         setInterval(fetchLiveData, 3000);
     </script>
 
-    {% if session.get('role') == 'admin' %}
-    <!-- 🌟 ADVANCED WEB SERIAL MONITOR & FLASHER 🌟 -->
+    <!-- 🌟 ESP-WEB-TOOLS JAVASCRIPT (For Local USB Flashing) 🌟 -->
     <script type="module">
         import { ESPLoader, Transport } from "https://unpkg.com/esptool-js@0.4.3/bundle.js";
 
-        let port = null;
-        let reader = null;
-        let keepReading = false;
+        let device = null;
+        let transport = null;
+        let esploader = null;
+        let espStub = null;
 
         const btnConnect = document.getElementById('btnConnectUsb');
         const btnFlash = document.getElementById('btnFlashUsb');
         const usbStatus = document.getElementById('usbStatusText');
         const usbFile = document.getElementById('usbFile');
 
-        async function startSerialMonitor() {
-            if (port && port.readable) {
-                keepReading = true;
-                const textDecoder = new TextDecoderStream();
-                const readableStreamClosed = port.readable.pipeTo(textDecoder.writable);
-                reader = textDecoder.readable.getReader();
-                
-                let buffer = "";
-                try {
-                    while (keepReading) {
-                        const { value, done } = await reader.read();
-                        if (done) break;
-                        if (value) {
-                            buffer += value;
-                            let lines = buffer.split('\n');
-                            buffer = lines.pop(); 
-                            lines.forEach(line => {
-                                if(line.trim() !== "") logToConsole(line.trim(), "#f8fafc"); // ESP32 के असली लॉग्स सफेद रंग में
-                            });
-                        }
-                    }
-                } catch (error) {
-                    console.log("Serial Read Closed");
-                } finally {
-                    try { reader.releaseLock(); } catch(e){}
-                }
+        btnConnect.onclick = async () => {
+            if (!navigator.serial) {
+                alert("Web Serial API is not supported in this browser. Please use Google Chrome or Microsoft Edge.");
+                return;
             }
-        }
-
-        if(btnConnect) {
-            btnConnect.onclick = async () => {
-                if (!navigator.serial) { alert("Use Google Chrome or Microsoft Edge for WebSerial USB."); return; }
-                try {
-                    port = await navigator.serial.requestPort();
-                    await port.open({ baudRate: 115200 });
-                    
-                    usbStatus.innerHTML = '✅ ESP32 Connected & Monitor Active!';
-                    usbStatus.style.color = '#10b981';
-                    btnConnect.innerHTML = '<i class="fas fa-check"></i> Connected';
-                    btnConnect.style.backgroundColor = '#4b5563';
-                    
-                    btnFlash.disabled = false;
-                    btnFlash.classList.remove('btn-dark');
-                    btnFlash.classList.add('btn-primary');
-                    
-                    logToConsole("🔌 USB Port Opened. Listening for ESP32 serial logs...", "#f59e0b");
-                    startSerialMonitor();
-
-                } catch (e) { logToConsole("❌ USB Error: " + e.message, "#ef4444"); }
-            };
-
-            btnFlash.onclick = async () => {
-                if (!usbFile.files.length) { alert('Please select a .bin file first!'); return; }
-                const file = usbFile.files[0];
-                const fileReader = new FileReader();
+            try {
+                device = await navigator.serial.requestPort();
+                transport = new Transport(device, true);
                 
-                fileReader.onload = async function(e) {
-                    try {
-                        btnFlash.disabled = true; 
-                        btnFlash.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Flashing...';
-                        
-                        // फ्लैश करने से पहले सीरियल मॉनिटर रोकें
-                        keepReading = false;
-                        if (reader) {
-                            try { await reader.cancel(); } catch(err){}
-                        }
-                        if (port) {
-                            try { await port.close(); } catch(err){}
-                        }
+                usbStatus.innerHTML = '✅ ESP32 Connected via USB!';
+                usbStatus.style.color = '#10b981';
+                
+                btnConnect.innerHTML = '<i class="fas fa-check"></i> Connected';
+                btnConnect.style.backgroundColor = '#4b5563';
+                
+                btnFlash.disabled = false;
+                btnFlash.classList.remove('btn-dark');
+                btnFlash.classList.add('btn-primary');
+                
+                logToConsole("🔌 USB Port opened successfully. Ready to flash.", "#f59e0b");
+            } catch (e) {
+                logToConsole("❌ USB Connection Error: " + e.message, "#ef4444");
+            }
+        };
 
-                        logToConsole("⚡ Initializing ESP32 Bootloader for Flashing...", "#f59e0b");
-                        
-                        const transport = new Transport(port, true);
-                        const esploader = new ESPLoader({ 
-                            transport: transport, 
-                            baudrate: 115200, 
-                            terminal: { writeLine: (d) => logToConsole(d, "#94a3b8"), clean: ()=>{}, write: ()=>{} } 
-                        });
-                        
-                        const espStub = await esploader.main();
-                        logToConsole("💾 Writing firmware to App Partition (0x10000)...", "#3b82f6");
-                        
-                        await espStub.flashData({ 
-                            fileArray: [{ data: e.target.result, address: 0x10000 }], 
-                            flashSize: "keep", flashMode: "keep", flashFreq: "keep", eraseAll: false, compress: true 
-                        });
-                        
-                        logToConsole("🎉 Flashing Complete! Performing Hard Reset...", "#10b981");
-                        await esploader.hardReset();
-                        
-                        // फ्लैश के बाद पोर्ट बंद करके सीरियल मॉनिटर फिर से चालू करें ताकि बूट लॉग्स दिखें
-                        await transport.disconnect();
-                        
-                        logToConsole("🔄 Reconnecting Serial Monitor to catch Boot Logs...", "#f59e0b");
-                        await port.open({ baudRate: 115200 });
-                        startSerialMonitor();
+        btnFlash.onclick = async () => {
+            if (!usbFile.files.length) {
+                alert('Please select a .bin file from your computer first!');
+                return;
+            }
 
-                        btnFlash.innerHTML = '<i class="fas fa-check"></i> Success / Flash Again';
-                        btnFlash.disabled = false;
-                    } catch (err) {
-                        logToConsole("❌ Flash Error: " + err.message, "#ef4444");
-                        btnFlash.disabled = false;
-                        btnFlash.innerHTML = '<i class="fas fa-bolt"></i> Retry Flash';
-                    }
-                };
-                fileReader.readAsBinaryString(file);
+            const file = usbFile.files[0];
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                const fileData = e.target.result;
+                
+                try {
+                    btnFlash.disabled = true;
+                    btnFlash.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Flashing to ESP32...';
+                    logToConsole("⚡ Initializing ESP32 bootloader...", "#f59e0b");
+                    
+                    const terminal = {
+                        clean: () => {},
+                        writeLine: (data) => logToConsole(data, "#94a3b8"),
+                        write: (data) => {}
+                    };
+
+                    esploader = new ESPLoader({
+                        transport: transport,
+                        baudrate: 115200,
+                        terminal: terminal
+                    });
+                    
+                    espStub = await esploader.main();
+                    logToConsole("💾 Erasing & Writing firmware to App Partition (0x10000)...", "#3b82f6");
+                    
+                    await espStub.flashData({
+                        fileArray: [{ data: fileData, address: 0x10000 }],
+                        flashSize: "keep",
+                        flashMode: "keep",
+                        flashFreq: "keep",
+                        eraseAll: false,
+                        compress: true
+                    });
+                    
+                    logToConsole("🎉 USB Flashing Complete! Rebooting ESP32...", "#10b981");
+                    await esploader.hardReset();
+                    btnFlash.innerHTML = '<i class="fas fa-check"></i> Flashed Successfully';
+                } catch (err) {
+                    logToConsole("❌ Flash Error: " + err.message, "#ef4444");
+                    btnFlash.innerHTML = '<i class="fas fa-bolt"></i> Retry Flash';
+                    btnFlash.disabled = false;
+                }
             };
-        }
+            reader.readAsBinaryString(file);
+        };
     </script>
-    {% endif %}
-
     {% endif %}
 </body>
 </html>
