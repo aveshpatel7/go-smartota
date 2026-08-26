@@ -115,16 +115,23 @@ def logout():
     session.pop('logged_in', None)
     return redirect(url_for('index'))
 
+# 🚀 1. फिक्स: आपका पुराना और 100% काम करने वाला अपलोड लॉजिक
 @app.route('/upload', methods=['POST'])
 def upload_file():
-    if not session.get('logged_in'): return jsonify({"status": "error", "message": "Unauthorized"})
-    file = request.files.get('file')
-    if file and file.filename != '':
+    if not session.get('logged_in'): 
+        return jsonify({"status": "error", "message": "Unauthorized"})
+        
+    if 'file' not in request.files:
+        return jsonify({"status": "error", "message": "No file selected!"})
+    
+    file = request.files['file']
+    if file.filename != '':
         file.save(os.path.join(UPLOAD_FOLDER, file.filename))
-        return jsonify({"status": "success", "message": f"{file.filename} Uploaded!"})
+        return jsonify({"status": "success", "message": f"✅ {file.filename} Uploaded!"})
+        
     return jsonify({"status": "error", "message": "Upload failed."})
 
-# 🚀 OTA Sender (With Bulk Update Support)
+# 🚀 OTA Sender (With Bulk Update Support & Force Push)
 @app.route('/send_ota', methods=['POST'])
 def send_ota():
     if not session.get('logged_in'): return jsonify({"status": "error"}), 401
@@ -140,7 +147,6 @@ def send_ota():
         ota_client.tls_set()
         ota_client.connect(MQTT_BROKER, MQTT_PORT, 60)
         
-        # 🚀 Bulk OTA Logic
         if node_id == "ALL_ONLINE":
             nodes = load_json(NODES_FILE, [])
             for n in nodes:
@@ -154,7 +160,7 @@ def send_ota():
         return jsonify({"status": "success", "message": f"OTA Command Sent!"})
     except Exception as e: return jsonify({"status": "error", "message": str(e)})
 
-# 🎛️ Remote Device Control API
+# 🎛️ 2. फिक्स: Remote Device Control (Force Push लॉजिक के साथ)
 @app.route('/device_control', methods=['POST'])
 def device_control():
     if not session.get('logged_in'): return jsonify({"status": "error"}), 401
@@ -165,12 +171,24 @@ def device_control():
     speed = data.get('speed', -1)
 
     topic = f"home/device/{node_id}/control"
-    payload = {"channel": channel, "state": state}
+    
+    # ESP32 "status" कीबोर्ड को ज़्यादा अच्छे से समझता है
+    payload = {"channel": channel, "status": state}
     if speed != -1: payload["speed"] = speed
 
-    mqtt_client.publish(topic, json.dumps(payload))
-    add_log(f"🕹️ Remote Command: {node_id} -> Ch {channel} {state}")
-    return jsonify({"status": "success"})
+    try:
+        # 🚀 रिमोट कंट्रोल के लिए भी 'धक्का मारने' वाला तरीका
+        ctrl_client = mqtt.Client()
+        ctrl_client.username_pw_set(MQTT_USER, MQTT_PASS)
+        ctrl_client.tls_set()
+        ctrl_client.connect(MQTT_BROKER, MQTT_PORT, 60)
+        ctrl_client.publish(topic, json.dumps(payload))
+        ctrl_client.disconnect()
+        
+        add_log(f"🕹️ Remote Command: {node_id} -> Ch {channel} {state}")
+        return jsonify({"status": "success"})
+    except Exception as e:
+        return jsonify({"status": "error"})
 
 # 📊 Excel/CSV Export API
 @app.route('/export_csv')

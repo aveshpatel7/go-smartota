@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Go Smart | Ultimate Console</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { --bg-dark: #0f172a; --bg-card: #1e293b; --text-main: #f8fafc; --text-muted: #94a3b8; --accent-green: #10b981; --accent-blue: #3b82f6; --border-color: #334155; }
         body { margin: 0; font-family: 'Segoe UI', sans-serif; background-color: var(--bg-dark); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
@@ -18,7 +17,7 @@
         .nav-item:hover, .nav-item.active { color: var(--accent-green); background-color: rgba(16, 185, 129, 0.1); border-left-color: var(--accent-green); }
         
         .main-content { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
-        .topbar { height: 70px; display: flex; justify-content: space-between; align-items: center; padding: 0 40px; border-bottom: 1px solid var(--border-color); background-color: var(--bg-dark); }
+        .topbar { height: 70px; display: flex; justify-content: space-between; align-items: center; padding: 0 40px; border-bottom: 1px solid var(--border-color); background-color: var(--bg-dark); flex-shrink: 0;}
         .container { padding: 30px 40px; }
         
         .tab-pane { display: none; }
@@ -32,7 +31,6 @@
         .btn { padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .btn-primary { background: var(--accent-blue); color: white; }
         .btn-success { background: var(--accent-green); color: white; }
-        .btn-dark { background: #4b5563; color: white; }
         
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border-color); font-size: 14px; }
@@ -42,7 +40,7 @@
         
         /* Remote Control Toggles */
         .switch-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .remote-btn { padding: 15px; background: var(--bg-dark); border: 1px solid var(--border-color); color: white; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold;}
+        .remote-btn { padding: 15px; background: var(--bg-dark); border: 1px solid var(--border-color); color: white; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold; transition: 0.3s;}
         .remote-btn:hover { border-color: var(--accent-blue); }
         .remote-btn.on { background: rgba(16, 185, 129, 0.2); border-color: var(--accent-green); color: var(--accent-green); }
 
@@ -72,9 +70,9 @@
             <div class="logo-icon"><i class="fas fa-bolt"></i></div>
             <div class="logo-text"><h2>Go Smart</h2><p>Enterprise Console</p></div>
         </div>
-        <a class="nav-item active" onclick="switchTab('tab-ota')"><i class="fas fa-cloud-upload-alt"></i> OTA & Flashing</a>
-        <a class="nav-item" onclick="switchTab('tab-control')"><i class="fas fa-gamepad"></i> Live Remote Control</a>
-        <a class="nav-item" onclick="switchTab('tab-crm')"><i class="fas fa-chart-line"></i> CRM & Analytics</a>
+        <a class="nav-item active" onclick="switchTab('tab-ota', this)"><i class="fas fa-cloud-upload-alt"></i> OTA & Flashing</a>
+        <a class="nav-item" onclick="switchTab('tab-control', this)"><i class="fas fa-gamepad"></i> Live Remote Control</a>
+        <a class="nav-item" onclick="switchTab('tab-crm', this)"><i class="fas fa-chart-line"></i> CRM & Analytics</a>
         <div style="flex-grow: 1;"></div>
         <a href="/logout" class="nav-item" style="color: #ef4444;"><i class="fas fa-sign-out-alt"></i> Logout</a>
     </div>
@@ -110,7 +108,8 @@
 
                     <div class="card">
                         <div class="card-header"><i class="fas fa-hdd"></i> Upload to Server</div>
-                        <form id="uploadForm">
+                        <!-- 🚀 1. फिक्स: फॉर्म में enctype जोड़ दिया गया है -->
+                        <form id="uploadForm" enctype="multipart/form-data">
                             <input type="file" name="file" accept=".bin" required>
                             <button type="submit" class="btn btn-success" id="uploadBtn"><i class="fas fa-upload"></i> Upload File</button>
                         </form>
@@ -135,10 +134,11 @@
                     </select>
                     
                     <div class="switch-grid" id="controlPanel" style="opacity: 0.5; pointer-events: none;">
-                        <button class="remote-btn" onclick="toggleSwitch(1)">💡 Switch 1</button>
-                        <button class="remote-btn" onclick="toggleSwitch(2)">💡 Switch 2</button>
-                        <button class="remote-btn" onclick="toggleSwitch(3)">💡 Switch 3</button>
-                        <button class="remote-btn" onclick="toggleSwitch(4)">💡 Switch 4</button>
+                        <!-- 🚀 2. फिक्स: 'this' पास किया गया है ताकि जावास्क्रिप्ट बटन को सही से पहचान सके -->
+                        <button class="remote-btn" onclick="toggleSwitch(1, this)">💡 Switch 1</button>
+                        <button class="remote-btn" onclick="toggleSwitch(2, this)">💡 Switch 2</button>
+                        <button class="remote-btn" onclick="toggleSwitch(3, this)">💡 Switch 3</button>
+                        <button class="remote-btn" onclick="toggleSwitch(4, this)">💡 Switch 4</button>
                     </div>
                     
                     <div style="margin-top: 20px;" id="fanPanel" style="opacity: 0.5; pointer-events: none;">
@@ -174,11 +174,11 @@
 
     <script>
         // 🗂️ Tab Switcher Logic
-        function switchTab(tabId) {
+        function switchTab(tabId, element) {
             document.querySelectorAll('.tab-pane').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(t => t.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
-            event.currentTarget.classList.add('active');
+            if(element) element.classList.add('active');
         }
 
         // 💻 Console Logger
@@ -200,18 +200,37 @@
             });
         };
 
+        // 🚀 Upload Form Submit
+        document.getElementById('uploadForm').onsubmit = function(e) {
+            e.preventDefault();
+            let btn = document.getElementById('uploadBtn');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...'; btn.disabled = true;
+            fetch('/upload', { method: 'POST', body: new FormData(this) })
+            .then(res => res.json()).then(data => {
+                logToConsole(data.message);
+                btn.innerHTML = '<i class="fas fa-upload"></i> Upload File'; btn.disabled = false;
+                if(data.status === "success") { setTimeout(() => location.reload(), 1500); }
+            });
+        };
+
         // 🎛️ Remote Control Logic
         function enableControls() {
             let node = document.getElementById('controlNodeSelect').value;
             let panel = document.getElementById('controlPanel');
             let fan = document.getElementById('fanPanel');
-            if(node) { panel.style.opacity = "1"; panel.style.pointerEvents = "auto"; }
-            else { panel.style.opacity = "0.5"; panel.style.pointerEvents = "none"; }
+            if(node) { 
+                panel.style.opacity = "1"; panel.style.pointerEvents = "auto"; 
+                fan.style.opacity = "1"; fan.style.pointerEvents = "auto";
+            } else { 
+                panel.style.opacity = "0.5"; panel.style.pointerEvents = "none"; 
+                fan.style.opacity = "0.5"; fan.style.pointerEvents = "none";
+            }
         }
 
-        function toggleSwitch(ch) {
+        function toggleSwitch(ch, btn) {
             let node = document.getElementById('controlNodeSelect').value;
-            let btn = event.currentTarget;
+            if(!node) { alert("Please select a device first!"); return; }
+            
             let state = btn.classList.contains('on') ? "OFF" : "ON";
             if(state === "ON") btn.classList.add('on'); else btn.classList.remove('on');
             
@@ -224,6 +243,8 @@
 
         function setFan() {
             let node = document.getElementById('controlNodeSelect').value;
+            if(!node) return;
+            
             let speed = document.getElementById('fanSpeed').value;
             document.getElementById('fanDisplay').innerText = speed;
             let state = speed > 0 ? "ON" : "OFF";
@@ -247,7 +268,6 @@
                     
                     data.nodes.forEach(n => { html += `<option value="${n}">${n}</option>`; });
                     
-                    // Only update if HTML changed to prevent UI flicker
                     if(select.innerHTML.length !== html.length) {
                         select.innerHTML = html;
                         if(data.nodes.includes(currentVal) || isSpecial) select.value = currentVal;
