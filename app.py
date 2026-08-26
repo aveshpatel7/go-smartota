@@ -5,10 +5,13 @@ import json
 import time
 
 app = Flask(__name__)
+# सिक्योरिटी के लिए एक सीक्रेट चाबी 
 app.secret_key = "gosmart_super_secret_key_2026" 
 
+# 🔐 एडमिन यूजरनेम और पासवर्ड
 ADMIN_USERNAME = "admin"
 ADMIN_PASSWORD = "12345678"
+
 UPLOAD_FOLDER = 'firmwarev2'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
@@ -68,13 +71,14 @@ def update_telemetry(node_id, data):
     
     save_json(TELEMETRY_FILE, telemetry)
 
+# 📡 बैकग्राउंड MQTT कनेक्शन (डैशबोर्ड को ज़िंदा रखने के लिए)
 def on_connect(client, userdata, flags, rc):
     if rc == 0:
         client.subscribe("home/device/+/status")
         client.subscribe("home/device/+/telemetry")
         client.subscribe("smartnest/devices/+/ota/status")
         client.subscribe("smartnest/devices/+/logs")
-        print("✅ MQTT Connected & Listening for Everything...")
+        print("✅ MQTT Connected & Listening for Telemetry...")
 
 def on_message(client, userdata, msg):
     try:
@@ -86,31 +90,28 @@ def on_message(client, userdata, msg):
         if len(parts) < 3: return
         node_id = parts[2]
 
-        # 1. ऑनलाइन/ऑफलाइन स्टेटस
         if '/status' in topic and 'ota' not in topic:
             if data.get("is_online") is True or "channel" in data:
                 update_node_status(node_id, True)
             elif data.get("is_online") is False:
                 update_node_status(node_id, False)
 
-        # 2. टेलीमेट्री (कस्टमर यूसेज डेटा)
         elif '/telemetry' in topic:
             update_node_status(node_id, True)
             update_telemetry(node_id, data)
 
-        # 3. OTA प्रोग्रेस (काली स्क्रीन के लिए)
         elif '/ota/status' in topic:
             status = str(data.get("status", "")).upper()
             progress = data.get("progress", 0)
             add_log(f"📡 [OTA {node_id}] {status} - {progress}%")
 
-        # 4. लाइव लॉग्स 
         elif '/logs' in topic:
             add_log(f"💻 [{node_id}] {payload_str}")
 
     except Exception as e:
         pass
 
+# MQTT क्लाइंट को चालू करना 
 mqtt_client = mqtt.Client()
 mqtt_client.username_pw_set(MQTT_USER, MQTT_PASS)
 mqtt_client.tls_set()
@@ -118,9 +119,10 @@ mqtt_client.on_connect = on_connect
 mqtt_client.on_message = on_message
 try:
     mqtt_client.connect(MQTT_BROKER, MQTT_PORT, 60)
-    mqtt_client.loop_start() 
+    mqtt_client.loop_start()  # यह बैकग्राउंड में चलता रहेगा
 except Exception as e:
     print("MQTT Connection Error:", e)
+
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -159,7 +161,8 @@ def upload_file():
         return jsonify({"status": "success", "message": f"{file.filename} Uploaded!"})
     return jsonify({"status": "error", "message": "Upload failed."})
 
-# 🚀 AJAX के लिए नया OTA सेंडर (Security Bypass के साथ)
+
+# 🚀 आपका पुराना और 100% भरोसेमंद OTA लॉजिक (नए डैशबोर्ड के AJAX के साथ)
 @app.route('/send_ota', methods=['POST'])
 def send_ota():
     if not session.get('logged_in'):
@@ -171,30 +174,33 @@ def send_ota():
     host_url = request.host_url.replace("http://", "https://")
     firmware_download_url = f"{host_url}firmware/{filename}"
     
-    # 🎯 बदलाव 1: हम वापस पुराने 'control' टॉपिक का इस्तेमाल करेंगे जिसे EMQX ब्लॉक नहीं करता!
+    # 🎯 आपका पुराना वाला पक्का टॉपिक
     topic = f"home/device/{node_id}/control"
     
-    # 🎯 बदलाव 2: पेलोड में "version" डालना ज़रूरी है, वरना ESP32 इग्नोर कर देगा
+    # 🎯 आपका पुराना वाला पक्का पेलोड (बिना किसी एक्स्ट्रा चीज़ के)
     payload = {
-        "action": "OTA_UPDATE", 
-        "firmware_url": firmware_download_url,
-        "version": "v3.0.0" 
+        "action": "OTA_UPDATE",
+        "firmware_url": firmware_download_url
     }
     
     try:
-        # 🎯 बदलाव 3: qos=1 (गारंटीड डिलीवरी) 
-        mqtt_client.publish(topic, json.dumps(payload), qos=1)
+        # बैकग्राउंड MQTT का उपयोग करके मैसेज भेजना (ताकि डैशबोर्ड क्रैश न हो)
+        mqtt_client.publish(topic, json.dumps(payload))
         
+        # डैशबोर्ड की काली स्क्रीन पर मैसेज छापना
         add_log(f"🚀 Sent Firmware {filename} to {node_id}")
-        return jsonify({"status": "success", "message": f"Command sent to {node_id}!"})
+        
+        # AJAX के लिए JSON रिस्पॉन्स (ताकि पेज रिफ्रेश न हो)
+        return jsonify({"status": "success", "message": f"OTA Command Sent to {node_id}!"})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)})
+
 
 @app.route('/firmware/<filename>')
 def serve_firmware(filename):
     return send_from_directory(UPLOAD_FOLDER, filename)
 
-# 🚀 सिंगल API से सारा लाइव डेटा (Nodes, Telemetry, Logs) जाएगा
+# 🚀 सिंगल API से सारा लाइव डेटा डैशबोर्ड पर भेजने के लिए
 @app.route('/api/live_data')
 def get_live_data():
     if not session.get('logged_in'):
