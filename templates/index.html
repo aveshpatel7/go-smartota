@@ -6,20 +6,13 @@
     <title>Go Smart | Admin Console</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        /* 🚀 4Layers जैसी Premium Dark Theme */
         :root {
-            --bg-dark: #0f172a;
-            --bg-card: #1e293b;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --accent-green: #10b981;
-            --accent-blue: #3b82f6;
+            --bg-dark: #0f172a; --bg-card: #1e293b; --text-main: #f8fafc;
+            --text-muted: #94a3b8; --accent-green: #10b981; --accent-blue: #3b82f6;
             --border-color: #334155;
         }
-
         body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-dark); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
         
-        /* Sidebar */
         .sidebar { width: 260px; background-color: var(--bg-dark); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; padding-top: 20px; }
         .logo-area { padding: 0 20px 30px 20px; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid var(--border-color); margin-bottom: 20px; }
         .logo-icon { width: 40px; height: 40px; background-color: var(--accent-green); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 20px; color: #000; }
@@ -27,60 +20,49 @@
         .logo-text p { margin: 0; font-size: 12px; color: var(--text-muted); }
         
         .nav-item { padding: 15px 25px; color: var(--text-muted); text-decoration: none; display: flex; align-items: center; gap: 15px; font-weight: 500; transition: 0.3s; cursor: pointer; border-left: 4px solid transparent; }
-        .nav-item:hover, .nav-item.active { color: var(--accent-green); background-color: rgba(16, 185, 129, 0.1); border-left-color: var(--accent-green); }
+        .nav-item.active { color: var(--accent-green); background-color: rgba(16, 185, 129, 0.1); border-left-color: var(--accent-green); }
         
-        /* Main Content */
         .main-content { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
-        
-        /* Top Bar */
-        .topbar { height: 70px; display: flex; justify-content: space-between; align-items: center; padding: 0 40px; border-bottom: 1px solid var(--border-color); background-color: var(--bg-dark); }
+        .topbar { height: 70px; display: flex; justify-content: space-between; align-items: center; padding: 0 40px; border-bottom: 1px solid var(--border-color); background-color: var(--bg-dark); flex-shrink: 0;}
         .page-title h1 { margin: 0; font-size: 24px; }
         .page-title p { margin: 5px 0 0 0; font-size: 14px; color: var(--text-muted); }
-        .top-badges { display: flex; gap: 15px; }
-        .badge { padding: 8px 15px; border-radius: 20px; font-size: 13px; font-weight: bold; display: flex; align-items: center; gap: 8px; border: 1px solid; }
-        .badge-mqtt { border-color: var(--accent-green); color: var(--accent-green); background-color: rgba(16, 185, 129, 0.1); }
-        .badge-admin { border-color: var(--border-color); color: var(--text-main); background-color: var(--bg-card); }
+        .badge { padding: 8px 15px; border-radius: 20px; font-size: 13px; font-weight: bold; border: 1px solid var(--accent-green); color: var(--accent-green); }
         
-        /* Container & Cards */
-        .container { padding: 40px; }
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
-        
+        .container { padding: 30px 40px; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px; }
         .card { background-color: var(--bg-card); border-radius: 12px; padding: 25px; border: 1px solid var(--border-color); }
-        .card-header { display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 20px; font-size: 18px; font-weight: bold; }
+        .card-header { display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 20px; font-size: 16px; font-weight: bold; }
         
-        /* Form Elements */
         label { display: block; margin-bottom: 8px; color: var(--text-muted); font-size: 14px; }
-        select, input[type="file"], input[type="text"], input[type="password"] { width: 100%; padding: 12px 15px; background-color: var(--bg-dark); border: 1px solid var(--border-color); color: var(--text-main); border-radius: 8px; margin-bottom: 20px; box-sizing: border-box; font-size: 15px; }
-        select:focus, input:focus { outline: none; border-color: var(--accent-blue); }
-        
-        .btn { width: 100%; padding: 14px; border: none; border-radius: 8px; font-weight: bold; font-size: 15px; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        select, input[type="file"], input[type="text"], input[type="password"] { width: 100%; padding: 12px 15px; background-color: var(--bg-dark); border: 1px solid var(--border-color); color: var(--text-main); border-radius: 8px; margin-bottom: 20px; box-sizing: border-box; }
+        .btn { width: 100%; padding: 14px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .btn-primary { background-color: var(--accent-blue); color: white; }
-        .btn-primary:hover { background-color: #2563eb; }
         .btn-success { background-color: var(--accent-green); color: white; }
-        .btn-success:hover { background-color: #059669; }
 
-        /* Login Screen Override */
-        .login-wrapper { display: flex; justify-content: center; align-items: center; height: 100vh; width: 100vw; background-color: var(--bg-dark); }
+        .console-window { background-color: #000; color: #10b981; font-family: monospace; padding: 15px; border-radius: 8px; height: 180px; overflow-y: auto; font-size: 13px; line-height: 1.6; }
+        .console-window p { margin: 2px 0; }
+
+        /* 🚀 नया टेलीमेट्री टेबल */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid var(--border-color); font-size: 14px; }
+        th { color: var(--text-muted); font-weight: bold; text-transform: uppercase; font-size: 12px; }
+        .tag-ok { background: rgba(16, 185, 129, 0.2); color: #10b981; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: bold;}
+        .tag-warn { background: rgba(239, 68, 68, 0.2); color: #ef4444; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: bold;}
+
+        .login-wrapper { display: flex; justify-content: center; align-items: center; height: 100vh; width: 100vw; }
         .login-box { width: 400px; background: var(--bg-card); padding: 40px; border-radius: 12px; border: 1px solid var(--border-color); text-align: center; }
-        
-        /* Live Console */
-        .console-card { margin-top: 30px; }
-        .console-window { background-color: #000; color: #10b981; font-family: monospace; padding: 20px; border-radius: 8px; height: 150px; overflow-y: auto; font-size: 13px; line-height: 1.5; }
-        .console-window p { margin: 5px 0; }
     </style>
 </head>
 <body>
 
     {% if not session.get('logged_in') %}
-    <!-- 🔒 LOGIN SCREEN -->
     <div class="login-wrapper">
         <div class="login-box">
-            <div class="logo-icon" style="margin: 0 auto 20px auto; font-size: 24px;">GS</div>
-            <h2>Go Smart Admin Console</h2>
-            <p style="color: var(--text-muted); margin-bottom: 30px;">Authenticate to access the system</p>
-            {% if error %} <p style="color: #ef4444; font-weight: bold;">{{ error }}</p> {% endif %}
+            <div class="logo-icon" style="margin: 0 auto 20px auto;">GS</div>
+            <h2>Go Smart Console</h2>
+            {% if error %} <p style="color: #ef4444;">{{ error }}</p> {% endif %}
             <form method="POST" action="/">
-                <input type="text" name="username" placeholder="Admin Username" required>
+                <input type="text" name="username" placeholder="Username" required>
                 <input type="password" name="password" placeholder="Password" required>
                 <button type="submit" class="btn btn-primary">Secure Login</button>
             </form>
@@ -88,165 +70,184 @@
     </div>
 
     {% else %}
-    <!-- 🚀 MAIN DASHBOARD -->
-    <!-- Sidebar -->
     <div class="sidebar">
         <div class="logo-area">
             <div class="logo-icon"><i class="fas fa-bolt"></i></div>
-            <div class="logo-text">
-                <h2>Go Smart</h2>
-                <p>Admin Console v2.0</p>
-            </div>
+            <div class="logo-text"><h2>Go Smart</h2><p>Admin Console</p></div>
         </div>
-        <a class="nav-item"><i class="fas fa-chart-line"></i> Dashboard Overview</a>
-        <a class="nav-item"><i class="fas fa-users"></i> Users & Activity</a>
-        <a class="nav-item"><i class="fas fa-network-wired"></i> MQTT Nodes Monitor</a>
         <a class="nav-item active"><i class="fas fa-bolt"></i> Firmware & OTA Center</a>
-        <a class="nav-item"><i class="fas fa-shield-alt"></i> Usage & Warranty</a>
-        
         <div style="flex-grow: 1;"></div>
-        <a href="/logout" class="nav-item" style="color: #ef4444;"><i class="fas fa-sign-out-alt"></i> Logout System</a>
+        <a href="/logout" class="nav-item" style="color: #ef4444;"><i class="fas fa-sign-out-alt"></i> Logout</a>
     </div>
 
-    <!-- Main Content -->
     <div class="main-content">
-        <!-- Topbar -->
         <div class="topbar">
             <div class="page-title">
                 <h1>Firmware & OTA Center</h1>
-                <p>Remote MQTT OTA updates and firmware management</p>
+                <p>Live Telemetry & Silent Background OTA Flashing</p>
             </div>
-            <div class="top-badges">
-                <div class="badge badge-mqtt"><i class="fas fa-check-circle"></i> MQTT Broker: Connected</div>
-                <div class="badge badge-admin"><i class="fas fa-user-shield"></i> Admin: Active</div>
-            </div>
+            <div class="badge"><i class="fas fa-wifi"></i> System Live</div>
         </div>
 
         <div class="container">
             <div class="grid-2">
-                <!-- OTA SENDER CARD -->
+                <!-- 🚀 1. OTA Form (AJAX - No Reload) -->
                 <div class="card">
-                    <div class="card-header"><i class="fas fa-cloud-upload-alt"></i> Remote MQTT OTA Firmware Updater</div>
-                    <form action="/send_ota" method="POST" id="otaForm">
-                        <label>Target Node / Device ID</label>
-                        <select name="node_id" required>
-                            <option value="">Select Online Node ID...</option>
-                            {% for node in online_nodes %}
-                                <option value="{{ node }}">{{ node }}</option>
-                            {% endfor %}
+                    <div class="card-header"><i class="fas fa-cloud-upload-alt"></i> Remote MQTT OTA Updater</div>
+                    <form id="otaForm">
+                        <label>Target Node ID</label>
+                        <select name="node_id" id="nodeSelect" required>
+                            <option value="">Select Online Node...</option>
                         </select>
-                        
-                        <label>Select Firmware Version (.bin)</label>
+                        <label>Select Firmware Version</label>
                         <select name="filename" required>
-                            <option value="">Select Firmware to Send...</option>
-                            {% for file in files %}
-                                <option value="{{ file }}">{{ file }}</option>
-                            {% endfor %}
+                            <option value="">Choose Firmware...</option>
+                            {% for file in files %} <option value="{{ file }}">{{ file }}</option> {% endfor %}
                         </select>
-                        
-                        <button type="submit" class="btn btn-primary"><i class="fab fa-telegram-plane"></i> Trigger OTA Remote Update</button>
+                        <button type="submit" class="btn btn-primary" id="otaBtn"><i class="fab fa-telegram-plane"></i> Send OTA Command</button>
                     </form>
                 </div>
 
-                <!-- FIRMWARE UPLOAD CARD -->
+                <!-- 🚀 2. Live Terminal -->
                 <div class="card">
-                    <div class="card-header"><i class="fas fa-hdd"></i> Upload New Firmware Binary</div>
-                    <form id="uploadForm" action="/upload" method="POST" enctype="multipart/form-data">
-                        <label>Upload New .bin File to Server</label>
-                        <input type="file" name="file" accept=".bin" required>
-                        <button type="submit" id="uploadBtn" class="btn btn-success"><i class="fas fa-upload"></i> Upload to Server</button>
-                    </form>
-                    
-                    <div style="margin-top: 15px; color: var(--accent-green); font-weight: bold; text-align: center;" id="statusText"></div>
+                    <div class="card-header"><i class="fas fa-terminal"></i> Live Device Console & OTA Status</div>
+                    <div class="console-window" id="consoleWindow">
+                        <p>> System initialized. Waiting for incoming telemetry...</p>
+                    </div>
                 </div>
             </div>
 
-            <!-- LIVE CONSOLE -->
-            <div class="card console-card">
-                <div class="card-header"><i class="fas fa-terminal"></i> Live System Activity Log</div>
-                <div class="console-window" id="consoleWindow">
-                    <p>> [SYSTEM] Go Smart Admin Dashboard initialized.</p>
-                    <p>> [MQTT] Connected to EMQX Broker. Listening for telemetry packets...</p>
+            <!-- 🚀 3. Telemetry Table -->
+            <div class="card">
+                <div class="card-header"><i class="fas fa-microchip"></i> Hardware Usage & Warranty Telemetry</div>
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Node ID</th>
+                                <th>Firmware</th>
+                                <th>Board Health</th>
+                                <th>Total Runtime</th>
+                                <th>Total Switch Cycles</th>
+                            </tr>
+                        </thead>
+                        <tbody id="telemetryTableBody">
+                            <tr><td colspan="5" style="text-align:center;">Waiting for data from ESP32 v2.2.5 boards...</td></tr>
+                        </tbody>
+                    </table>
                 </div>
+            </div>
+            
+            <br>
+            <!-- File Upload (Optional Backup) -->
+            <div class="card" style="width: 50%;">
+                <div class="card-header"><i class="fas fa-hdd"></i> Upload Firmware (Temp Cache)</div>
+                <form id="uploadForm">
+                    <input type="file" name="file" accept=".bin" required>
+                    <button type="submit" class="btn btn-success" id="uploadBtn">Upload File</button>
+                </form>
             </div>
         </div>
     </div>
 
-    <!-- Scripts for Auto-Update & Upload -->
     <script>
-        // File Upload AJAX
-        var uploadForm = document.getElementById('uploadForm');
-        if (uploadForm) {
-            uploadForm.onsubmit = function(e) {
-                e.preventDefault(); 
-                var formData = new FormData(this);
-                var xhr = new XMLHttpRequest();
-                var statusText = document.getElementById('statusText');
-                var uploadBtn = document.getElementById('uploadBtn');
-
-                uploadBtn.disabled = true;
-                uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
-                
-                xhr.onload = function() {
-                    if (xhr.status === 200) {
-                        statusText.innerText = "✅ Firmware Uploaded Successfully!";
-                        logToConsole("✅ Firmware binary uploaded to server.");
-                        setTimeout(function(){ location.reload(); }, 1500);
-                    } else {
-                        statusText.innerText = "❌ Error uploading file!";
-                        statusText.style.color = "#ef4444";
-                        uploadBtn.disabled = false;
-                        uploadBtn.innerHTML = '<i class="fas fa-upload"></i> Upload to Server';
-                    }
-                };
-                xhr.open("POST", "/upload", true);
-                xhr.send(formData);
-            };
-        }
-
-        // 🚀 Auto-Update Dropdown
-        function updateDropdown() {
-            var nodeSelect = document.querySelector('select[name="node_id"]');
-            if (!nodeSelect) return;
-
-            fetch('/get_nodes')
-            .then(response => response.json())
-            .then(nodes => {
-                var currentValue = nodeSelect.value;
-                if (currentValue !== "") { return; } // Don't interrupt if user selected something
-                
-                nodeSelect.innerHTML = '<option value="">Select Online Node ID...</option>';
-                nodes.forEach(node => {
-                    var option = document.createElement('option');
-                    option.value = node;
-                    option.innerText = node;
-                    nodeSelect.appendChild(option);
-                });
-            })
-            .catch(error => console.error('Error:', error));
-        }
-
-        setInterval(updateDropdown, 5000);
-
-        // Simple Console Logger
         function logToConsole(msg) {
-            var cw = document.getElementById('consoleWindow');
-            var time = new Date().toLocaleTimeString();
-            cw.innerHTML += '<p>> [' + time + '] ' + msg + '</p>';
+            let cw = document.getElementById('consoleWindow');
+            cw.innerHTML += '<p>> ' + msg + '</p>';
             cw.scrollTop = cw.scrollHeight;
         }
 
-        // Log form submission
-        var otaForm = document.getElementById('otaForm');
-        if(otaForm) {
-            otaForm.addEventListener('submit', function() {
-                var node = document.querySelector('select[name="node_id"]').value;
-                var file = document.querySelector('select[name="filename"]').value;
-                logToConsole("🚀 Triggering OTA Update for " + node + " with firmware " + file + "...");
+        // 🚀 1. Handle OTA Command smoothly (No Page Refresh)
+        document.getElementById('otaForm').onsubmit = function(e) {
+            e.preventDefault();
+            let btn = document.getElementById('otaBtn');
+            let formData = new FormData(this);
+            
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+            btn.disabled = true;
+            logToConsole("⏳ Initiating OTA payload via MQTT Broker...");
+
+            fetch('/send_ota', { method: 'POST', body: formData })
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === "success") { logToConsole("✅ " + data.message); } 
+                else { logToConsole("❌ Error: " + data.message); }
+                btn.innerHTML = '<i class="fab fa-telegram-plane"></i> Send OTA Command';
+                btn.disabled = false;
+            }).catch(err => {
+                logToConsole("❌ Network Error!");
+                btn.disabled = false;
+            });
+        };
+
+        // 🚀 2. Handle File Upload smoothly
+        document.getElementById('uploadForm').onsubmit = function(e) {
+            e.preventDefault();
+            let btn = document.getElementById('uploadBtn');
+            btn.innerHTML = 'Uploading...';
+            fetch('/upload', { method: 'POST', body: new FormData(this) })
+            .then(res => res.json())
+            .then(data => {
+                logToConsole("✅ " + data.message);
+                btn.innerHTML = 'Upload File';
+                setTimeout(() => location.reload(), 1500); // Reload to update dropdown
+            });
+        };
+
+        // 🚀 3. Central Background Spy (Fetches Nodes, Logs & Telemetry)
+        function fetchLiveData() {
+            fetch('/api/live_data')
+            .then(res => res.json())
+            .then(data => {
+                
+                // Update Node Dropdown safely
+                let nodeSelect = document.getElementById('nodeSelect');
+                let currentValue = nodeSelect.value;
+                if(currentValue === "") {
+                    nodeSelect.innerHTML = '<option value="">Select Online Node...</option>';
+                    data.nodes.forEach(n => {
+                        let opt = document.createElement('option'); opt.value = n; opt.innerText = n;
+                        nodeSelect.appendChild(opt);
+                    });
+                }
+
+                // Update Live Console with latest MQTT logs
+                let cw = document.getElementById('consoleWindow');
+                if(data.logs.length > 0) {
+                    cw.innerHTML = '<p>> System initialized. Waiting for incoming telemetry...</p>';
+                    data.logs.forEach(log => { cw.innerHTML += '<p>' + log + '</p>'; });
+                    cw.scrollTop = cw.scrollHeight;
+                }
+
+                // Update Telemetry Table
+                let tBody = document.getElementById('telemetryTableBody');
+                if(Object.keys(data.telemetry).length > 0) {
+                    tBody.innerHTML = '';
+                    for (const [node, tel] of Object.entries(data.telemetry)) {
+                        let totalHours = 0; let totalToggles = 0;
+                        if(tel.channels) {
+                            for(const ch in tel.channels) {
+                                totalHours += parseFloat(tel.channels[ch].on_hours);
+                                totalToggles += parseInt(tel.channels[ch].toggles);
+                            }
+                        }
+                        
+                        let healthTag = tel.crash_count > 0 ? `<span class="tag-warn">${tel.crash_count} Crashes</span>` : `<span class="tag-ok">Healthy</span>`;
+                        let row = `<tr>
+                            <td style="font-weight:bold; color:var(--accent-blue);">${node}</td>
+                            <td><span class="badge">${tel.fw_version}</span></td>
+                            <td>Boot: ${tel.boot_count} | ${healthTag}</td>
+                            <td>${totalHours.toFixed(2)} Hrs</td>
+                            <td>${totalToggles} Clicks</td>
+                        </tr>`;
+                        tBody.innerHTML += row;
+                    }
+                }
             });
         }
-    </script>
-    {% endif %}
 
+        // Run Spy every 3 seconds
+        setInterval(fetchLiveData, 3000);
+    </script>
 </body>
 </html>
