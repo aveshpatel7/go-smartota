@@ -13,7 +13,7 @@
         .logo-area { padding: 0 20px 30px 20px; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid var(--border-color); margin-bottom: 20px; }
         .logo-icon { width: 40px; height: 40px; background-color: var(--accent-green); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 20px; color: #000; }
         
-        .nav-item { padding: 15px 25px; color: var(--text-muted); text-decoration: none; display: flex; align-items: center; gap: 15px; font-weight: 500; cursor: pointer; border-left: 4px solid transparent; }
+        .nav-item { padding: 15px 25px; color: var(--text-muted); text-decoration: none; display: flex; align-items: center; gap: 15px; font-weight: 500; cursor: pointer; border-left: 4px solid transparent; transition: 0.3s;}
         .nav-item:hover, .nav-item.active { color: var(--accent-green); background-color: rgba(16, 185, 129, 0.1); border-left-color: var(--accent-green); }
         
         .main-content { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
@@ -28,9 +28,11 @@
         .card-header { font-size: 16px; font-weight: bold; padding-bottom: 15px; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); display:flex; justify-content: space-between; align-items:center; }
         
         input, select { width: 100%; padding: 12px; background: var(--bg-dark); border: 1px solid var(--border-color); color: white; border-radius: 8px; margin-bottom: 15px; box-sizing: border-box; }
-        .btn { padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn { padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;}
         .btn-primary { background: var(--accent-blue); color: white; }
+        .btn-primary:hover { background: #2563eb; }
         .btn-success { background: var(--accent-green); color: white; }
+        .btn-dark { background: #4b5563; color: white; }
         
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border-color); font-size: 14px; }
@@ -89,6 +91,7 @@
             <!-- ========================================== -->
             <div id="tab-ota" class="tab-pane active">
                 <div class="grid-2">
+                    <!-- 1. Remote MQTT OTA Updater -->
                     <div class="card">
                         <div class="card-header"><i class="fas fa-cloud-upload-alt"></i> Remote Fleet OTA</div>
                         <form id="otaForm">
@@ -106,19 +109,38 @@
                         </form>
                     </div>
 
+                    <!-- 2. USB WebSerial Flasher (आपका फेवरेट फीचर वापस आ गया!) -->
                     <div class="card">
-                        <div class="card-header"><i class="fas fa-hdd"></i> Upload to Server</div>
-                        <!-- 🚀 1. फिक्स: फॉर्म में enctype जोड़ दिया गया है -->
-                        <form id="uploadForm" enctype="multipart/form-data">
-                            <input type="file" name="file" accept=".bin" required>
-                            <button type="submit" class="btn btn-success" id="uploadBtn"><i class="fas fa-upload"></i> Upload File</button>
-                        </form>
+                        <div class="card-header"><i class="fab fa-usb"></i> WebSerial Browser USB Flasher</div>
+                        <p style="font-size: 13px; color: var(--text-muted); margin-top: 0;">Connect ESP32 via USB cable to Chrome/Edge to flash locally.</p>
+                        
+                        <button type="button" class="btn btn-success" id="btnConnectUsb" style="margin-bottom: 10px;">
+                            <i class="fas fa-plug"></i> Connect ESP32 via USB
+                        </button>
+                        <p id="usbStatusText" style="font-size: 13px; color: #ef4444; font-weight: bold; margin-bottom: 20px;">🔌 USB Cable Disconnected</p>
+                        
+                        <div style="background-color: var(--bg-dark); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color);">
+                            <label>Select Firmware File (.bin)</label>
+                            <input type="file" id="usbFile" accept=".bin" style="margin-bottom: 15px;">
+                            <button type="button" class="btn btn-dark" id="btnFlashUsb" disabled>
+                                <i class="fas fa-bolt"></i> Flash Firmware to ESP32
+                            </button>
+                        </div>
                     </div>
                 </div>
 
-                <div class="card">
-                    <div class="card-header"><i class="fas fa-terminal"></i> Live System Console</div>
+                <div class="card" style="margin-bottom: 30px;">
+                    <div class="card-header"><i class="fas fa-terminal"></i> Live System Console (OTA & USB Logs)</div>
                     <div class="console-window" id="consoleWindow"></div>
+                </div>
+
+                <!-- 3. Upload to Server -->
+                <div class="card" style="width: 50%;">
+                    <div class="card-header"><i class="fas fa-hdd"></i> Upload Firmware to Server (For Remote OTA)</div>
+                    <form id="uploadForm" enctype="multipart/form-data">
+                        <input type="file" name="file" accept=".bin" required>
+                        <button type="submit" class="btn btn-success" id="uploadBtn"><i class="fas fa-upload"></i> Upload File</button>
+                    </form>
                 </div>
             </div>
 
@@ -134,7 +156,6 @@
                     </select>
                     
                     <div class="switch-grid" id="controlPanel" style="opacity: 0.5; pointer-events: none;">
-                        <!-- 🚀 2. फिक्स: 'this' पास किया गया है ताकि जावास्क्रिप्ट बटन को सही से पहचान सके -->
                         <button class="remote-btn" onclick="toggleSwitch(1, this)">💡 Switch 1</button>
                         <button class="remote-btn" onclick="toggleSwitch(2, this)">💡 Switch 2</button>
                         <button class="remote-btn" onclick="toggleSwitch(3, this)">💡 Switch 3</button>
@@ -172,8 +193,8 @@
         </div>
     </div>
 
+    <!-- 🌟 NORMAL JAVASCRIPT (For OTA and Telemetry) 🌟 -->
     <script>
-        // 🗂️ Tab Switcher Logic
         function switchTab(tabId, element) {
             document.querySelectorAll('.tab-pane').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(t => t.classList.remove('active'));
@@ -181,14 +202,12 @@
             if(element) element.classList.add('active');
         }
 
-        // 💻 Console Logger
-        function logToConsole(msg) {
+        function logToConsole(msg, color = '#10b981') {
             let cw = document.getElementById('consoleWindow');
-            cw.innerHTML += `<p>> ${msg}</p>`;
+            cw.innerHTML += `<p style="color: ${color};">> ${msg}</p>`;
             cw.scrollTop = cw.scrollHeight;
         }
 
-        // 🚀 OTA Form Submit
         document.getElementById('otaForm').onsubmit = function(e) {
             e.preventDefault();
             let btn = document.getElementById('otaBtn');
@@ -200,7 +219,6 @@
             });
         };
 
-        // 🚀 Upload Form Submit
         document.getElementById('uploadForm').onsubmit = function(e) {
             e.preventDefault();
             let btn = document.getElementById('uploadBtn');
@@ -213,7 +231,6 @@
             });
         };
 
-        // 🎛️ Remote Control Logic
         function enableControls() {
             let node = document.getElementById('controlNodeSelect').value;
             let panel = document.getElementById('controlPanel');
@@ -230,58 +247,42 @@
         function toggleSwitch(ch, btn) {
             let node = document.getElementById('controlNodeSelect').value;
             if(!node) { alert("Please select a device first!"); return; }
-            
             let state = btn.classList.contains('on') ? "OFF" : "ON";
             if(state === "ON") btn.classList.add('on'); else btn.classList.remove('on');
-            
-            fetch('/device_control', {
-                method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ node_id: node, channel: ch, state: state })
-            });
+            fetch('/device_control', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ node_id: node, channel: ch, state: state }) });
             logToConsole(`Sent Remote Command: ${node} -> Ch ${ch} ${state}`);
         }
 
         function setFan() {
             let node = document.getElementById('controlNodeSelect').value;
             if(!node) return;
-            
             let speed = document.getElementById('fanSpeed').value;
             document.getElementById('fanDisplay').innerText = speed;
             let state = speed > 0 ? "ON" : "OFF";
-            
-            fetch('/device_control', {
-                method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ node_id: node, channel: 5, state: state, speed: parseInt(speed) })
-            });
+            fetch('/device_control', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ node_id: node, channel: 5, state: state, speed: parseInt(speed) }) });
             logToConsole(`Sent Remote Command: ${node} -> Fan Speed ${speed}`);
         }
 
-        // 🔄 Live Background Data Spy
         function fetchLiveData() {
             fetch('/api/live_data').then(res => res.json()).then(data => {
-                // Update Dropdowns safely
                 let selects = [document.getElementById('nodeSelect'), document.getElementById('controlNodeSelect')];
                 selects.forEach(select => {
                     let currentVal = select.value;
                     let isSpecial = currentVal === "ALL_ONLINE";
                     let html = select.id === 'nodeSelect' ? '<option value="">Select Online Node...</option><option value="ALL_ONLINE" style="background:#ef4444; color:white; font-weight:bold;">🔥 BROADCAST TO ALL</option>' : '<option value="">Select Online Node...</option>';
-                    
                     data.nodes.forEach(n => { html += `<option value="${n}">${n}</option>`; });
-                    
                     if(select.innerHTML.length !== html.length) {
                         select.innerHTML = html;
                         if(data.nodes.includes(currentVal) || isSpecial) select.value = currentVal;
                     }
                 });
 
-                // Update Logs
                 let cw = document.getElementById('consoleWindow');
                 if(data.logs.length > 0 && cw.innerHTML.length < 50) {
                     data.logs.forEach(l => { cw.innerHTML += `<p>${l}</p>`; });
                     cw.scrollTop = cw.scrollHeight;
                 }
 
-                // Update Telemetry Table
                 let tBody = document.getElementById('telemetryTableBody');
                 if(Object.keys(data.telemetry).length > 0) {
                     tBody.innerHTML = '';
@@ -292,7 +293,6 @@
                         }
                         let healthTag = tel.crash_count > 0 ? `<span class="tag-warn">${tel.crash_count} Crashes</span>` : `<span class="tag-ok">Healthy</span>`;
                         let signalTag = tel.rssi < -80 ? `<span style="color:#ef4444;">Weak (${tel.rssi}dBm)</span>` : `<span style="color:#10b981;">Good (${tel.rssi}dBm)</span>`;
-                        
                         tBody.innerHTML += `<tr>
                             <td style="font-weight:bold; color:var(--accent-blue);">${node}</td>
                             <td><span class="badge">${tel.fw_version}</span></td>
@@ -306,6 +306,98 @@
             });
         }
         setInterval(fetchLiveData, 3000);
+    </script>
+
+    <!-- 🌟 ESP-WEB-TOOLS JAVASCRIPT (For Local USB Flashing) 🌟 -->
+    <script type="module">
+        import { ESPLoader, Transport } from "https://unpkg.com/esptool-js@0.4.3/bundle.js";
+
+        let device = null;
+        let transport = null;
+        let esploader = null;
+        let espStub = null;
+
+        const btnConnect = document.getElementById('btnConnectUsb');
+        const btnFlash = document.getElementById('btnFlashUsb');
+        const usbStatus = document.getElementById('usbStatusText');
+        const usbFile = document.getElementById('usbFile');
+
+        btnConnect.onclick = async () => {
+            if (!navigator.serial) {
+                alert("Web Serial API is not supported in this browser. Please use Google Chrome or Microsoft Edge.");
+                return;
+            }
+            try {
+                device = await navigator.serial.requestPort();
+                transport = new Transport(device, true);
+                
+                usbStatus.innerHTML = '✅ ESP32 Connected via USB!';
+                usbStatus.style.color = '#10b981';
+                
+                btnConnect.innerHTML = '<i class="fas fa-check"></i> Connected';
+                btnConnect.style.backgroundColor = '#4b5563';
+                
+                btnFlash.disabled = false;
+                btnFlash.classList.remove('btn-dark');
+                btnFlash.classList.add('btn-primary');
+                
+                logToConsole("🔌 USB Port opened successfully. Ready to flash.", "#f59e0b");
+            } catch (e) {
+                logToConsole("❌ USB Connection Error: " + e.message, "#ef4444");
+            }
+        };
+
+        btnFlash.onclick = async () => {
+            if (!usbFile.files.length) {
+                alert('Please select a .bin file from your computer first!');
+                return;
+            }
+
+            const file = usbFile.files[0];
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                const fileData = e.target.result;
+                
+                try {
+                    btnFlash.disabled = true;
+                    btnFlash.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Flashing to ESP32...';
+                    logToConsole("⚡ Initializing ESP32 bootloader...", "#f59e0b");
+                    
+                    const terminal = {
+                        clean: () => {},
+                        writeLine: (data) => logToConsole(data, "#94a3b8"),
+                        write: (data) => {}
+                    };
+
+                    esploader = new ESPLoader({
+                        transport: transport,
+                        baudrate: 115200,
+                        terminal: terminal
+                    });
+                    
+                    espStub = await esploader.main();
+                    logToConsole("💾 Erasing & Writing firmware to App Partition (0x10000)...", "#3b82f6");
+                    
+                    await espStub.flashData({
+                        fileArray: [{ data: fileData, address: 0x10000 }],
+                        flashSize: "keep",
+                        flashMode: "keep",
+                        flashFreq: "keep",
+                        eraseAll: false,
+                        compress: true
+                    });
+                    
+                    logToConsole("🎉 USB Flashing Complete! Rebooting ESP32...", "#10b981");
+                    await esploader.hardReset();
+                    btnFlash.innerHTML = '<i class="fas fa-check"></i> Flashed Successfully';
+                } catch (err) {
+                    logToConsole("❌ Flash Error: " + err.message, "#ef4444");
+                    btnFlash.innerHTML = '<i class="fas fa-bolt"></i> Retry Flash';
+                    btnFlash.disabled = false;
+                }
+            };
+            reader.readAsBinaryString(file);
+        };
     </script>
     {% endif %}
 </body>
